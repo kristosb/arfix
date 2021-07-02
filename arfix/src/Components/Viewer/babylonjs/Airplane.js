@@ -15,7 +15,7 @@ class Airplane {
         });
     }
     async loadMeshes(){
-        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "arfix/", "airplane.glb", this.scene, function (newMeshes) {
+        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "assets/", "airplane.glb", this.scene, function (newMeshes) {
         });
         return result;
     }
