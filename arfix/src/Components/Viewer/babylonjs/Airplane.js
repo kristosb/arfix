@@ -15,7 +15,7 @@ class Airplane {
         });
     }
     async loadMeshes(){
-        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "assets/", "airplane.glb", this.scene, function (newMeshes) {
+        const result = await BABYLON.SceneLoader.ImportMeshAsync("", process.env.PUBLIC_URL+"/", "airplane.glb", this.scene, function (newMeshes) {
         });
         return result;
     }
@@ -51,9 +51,6 @@ class Airplane {
         rotor.animations = [];
         rotor.animations.push(animWheel);
         this.animationGroup.addTargetedAnimation(animWheel,rotor );
-        //scene.beginAnimation(wheelRB, 0, 30, true);
-        //this.animationGroup.play(true);
-        //this.animationGroup.speedRatio = 1;
       }
     addAnimations(){
         this.rotorSpin(this.meshAll[5]);
@@ -123,7 +120,7 @@ export default function scene(scene) {
         }
       }
     );
-
+    console.log(process.env.PUBLIC_URL);
     const speed = 0.5;
     const textureOffsetSpeed = 0.02;
 
