@@ -11,6 +11,7 @@ import 'babylonjs-loaders';
 //import * as CANNON from './cannon.js';
 import * as CANNON from 'cannon';
 import SceneSubject from './SceneSubject';
+import Airplane from './Airplane';
 //import * as BABYLON from 'babylonjs';
 //import { default as Ammo } from 'ammo.js/builds/ammo';
 
@@ -30,8 +31,8 @@ export default function canvas(canvas)  {
     const scene = buildScene();
     const gravity = buildGravity();
     const camera = buildCamera(screenDimensions);
-    const sceneSubjects = createSceneSubjects(scene);
-
+    //const sceneSubjects = createSceneSubjects(scene);
+    const airplane = new Airplane(scene);
 
 
     function buildScene() {
@@ -69,12 +70,12 @@ export default function canvas(canvas)  {
         const aspectRatio = width / height;
         // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
         //const camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
-        const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 1.5, new BABYLON.Vector3(0, 5, -10));
+        const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 1.5, new BABYLON.Vector3(0, 10, -10));
 
         // Target the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
         camera.lowerRadiusLimit = 4;
-        camera.upperRadiusLimit = 15;
+        camera.upperRadiusLimit = 155;
         camera.wheelDeltaPercentage = 0.01;
         // Attach the camera to the canvas
         camera.attachControl(canvas, false);
