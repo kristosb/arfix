@@ -71,6 +71,7 @@ export default function canvas(canvas)  {
         // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
         //const camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
         const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 1.5, new BABYLON.Vector3(0, 10, -10));
+        //const camera = new BABYLON.FollowCamera("camera", new BABYLON.Vector3(0, 10, -10), scene);
 
         // Target the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
