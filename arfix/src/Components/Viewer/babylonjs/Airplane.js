@@ -1,6 +1,18 @@
 //import * as BABYLON from "@babylonjs/core";
 import * as BABYLON from 'babylonjs';
 
+// Use physics viewer to display impostors
+const showImpostors = function(scene) {
+
+        const physicsViewer = new BABYLON.PhysicsViewer(scene);
+        scene.meshes.forEach(mesh => {
+            if (mesh.physicsImpostor == null) {
+                // no physics impostor, skip
+                return;
+            }
+            physicsViewer.showImpostor(mesh.physicsImpostor, mesh);
+        });
+    };
 
 var vmult = function(v,q){
     var target =  new BABYLON.Vector3();
@@ -33,8 +45,9 @@ var vectorToWorldFrame = function(localVector, quaternion){
 };
 var pointToWorldFrame = function(localPoint,quaternion, position){
     var result = new BABYLON.Vector3();
+    //var rot = new BABYLON.Vector3();
     result = vmult(localPoint,quaternion);
-    result.add(position,result);
+    result.add(position);
     return result;
 };
 
@@ -45,7 +58,8 @@ var applyLocalForce = function(localForce, localPoint, mesh){
     // Transform the force vector to world space
     worldForce = vectorToWorldFrame(localForce, mesh.rotationQuaternion);
     worldPoint = pointToWorldFrame(localPoint, mesh.rotationQuaternion, mesh.getAbsolutePosition());
-    //console.log(localForce,localPoint);
+    //console.log(mesh.position);
+    //console.log(mesh.getAbsolutePosition());
     //console.log(worldForce,worldPoint);
     mesh.physicsImpostor.applyForce(worldForce, worldPoint);
 };
@@ -62,14 +76,40 @@ class Airplane {
         this._yawLimit = 2;
         this._pitch = 0;
         this._pitchLimit = 2;
-        this.loadMeshes().then(res=>{
+        this._velocity = 0;     // 3 axis
+        this._currentSpeed = 0; // 1 axis
+        this._enginePower = 0;
+        this._enginePowerLimit = 1;
+        this.speedModifier = 0.03;
+        /*this.loadMeshes().then(res=>{
             this.meshAll=res.meshes;
             this.hideElements();
             this.addAnimations();
             this.meshRootPosition(0,2,0);
             this.addPhysics();
             this.meshAll.map(m=>{console.log(m.name)});
-        });
+        });*/
+        this.loadBox();
+        //this.loadSphere();
+    }
+    loadBox(){
+        var box =  BABYLON.MeshBuilder.CreateBox("Box", {width:2,height:1,depth:3}, this.scene);
+        box.position = new BABYLON.Vector3(0, 2, -90);
+        /*var myMaterial = new BABYLON.StandardMaterial("myMaterial", this.scene);
+
+        myMaterial.diffuseColor = new BABYLON.Color3(1, 0, 1);
+        myMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+        myMaterial.emissiveColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+        box.material = myMaterial;*/
+
+        this.createPhysicsImpostor(this.scene, box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 50, friction: 0.0,  }, true);
+        this.meshAll = [box];
+    }
+    loadSphere(){
+        var sphere = BABYLON.Mesh.CreateSphere("Sphere0", 16, 1, this.scene);
+        sphere.position = new BABYLON.Vector3(0, 2, -90);
+        this.createPhysicsImpostor(this.scene, sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 50, friction: 0.0, restitution: 0 }, true);
+        this.meshAll = [sphere];
     }
     async loadMeshes(){
         const result = await BABYLON.SceneLoader.ImportMeshAsync("", process.env.PUBLIC_URL+"/", "airplane.glb", this.scene, function (newMeshes) {
@@ -121,10 +161,10 @@ class Airplane {
                 this.createPhysicsImpostor(this.scene, mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 0, friction: 0.3, restitution: 0  }, true);
             }
             if (mesh.name.includes("wheel")) {
-              this.createPhysicsImpostor(this.scene, mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 0, friction: 0.3, restitution: 0.5  }, true);
+              this.createPhysicsImpostor(this.scene, mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 0, friction: 0.0, restitution: 0.5  }, true);
             }
         });
-        this.createPhysicsImpostor(this.scene, newMeshes[0], BABYLON.PhysicsImpostor.NoImpostor, { mass: 50, friction: 0.3, restitution: 0  }, true);
+        this.createPhysicsImpostor(this.scene, newMeshes[0], BABYLON.PhysicsImpostor.NoImpostor, { mass: 50, friction: 0.0, restitution: 0  }, true);
   
       }
     createPhysicsImpostor(scene, entity, impostor, options, reparent) {
@@ -187,10 +227,46 @@ class Airplane {
     get pitch(){
         return this._pitch;
     }
-    applyForceToBody(){
+    set enginePower(val){
+        if (val > this._enginePowerLimit) val = this._enginePowerLimit;
+        if (val < 0 ) val = 0;
+        this._enginePower = val;
+    }
+    get enginePower(){
+        return this._enginePower;
+    }
+    get velocity(){
+        var velocity = vmult(
+            this.meshAll[0].physicsImpostor.getLinearVelocity(),
+            BABYLON.Quaternion.Inverse(this.meshAll[0].rotationQuaternion));
+        return velocity;
+    }
+    get currentSpeed(){
+		//const velocity = body.quaternion.inverse().vmult(body.velocity);
+		//const currentSpeed = velocity.z;
+        return 0;
+    }
+    applyLiftForce(){
         if(this.meshAll!==null){
-            this.meshAll[0].physicsImpostor.applyForce(BABYLON.Vector3.Up().scale(9.81*this._lift), this.meshAll[0].getAbsolutePosition().add(BABYLON.Vector3.Zero()));        
+            let lift = this.velocity.z * Math.abs(this.velocity.z) * 1.5;
+            this.meshAll[0].physicsImpostor.applyForce(new BABYLON.Vector3(0,1,0).scale(lift), this.meshAll[0].getAbsolutePosition().add(BABYLON.Vector3.Zero()));        
             //applyLocalForce(new BABYLON.Vector3(0, 9.81*this._lift, 0), new BABYLON.Vector3(0, 0, 0), this.meshAll[0]);
+            //this.meshAll[0].physicsImpostor.setLinearVelocity(new BABYLON.Vector3(0,0.2,0));
+            //console.log(lift);
+        }
+    }
+    applyDragForce(){
+        if(this.meshAll!==null){
+            var velocity = this.velocity;
+            //this.meshAll[0].physicsImpostor.applyForce(new BABYLON.Vector3(0,1,0).scale(9.81*this._lift), this.meshAll[0].getAbsolutePosition().add(BABYLON.Vector3.Zero()));        
+            this.meshAll[0].physicsImpostor.applyForce(
+                vectorToWorldFrame(new BABYLON.Vector3( 
+                    velocity.x * Math.abs(velocity.x) * -20,
+					velocity.y * Math.abs(velocity.y) * -100,
+					velocity.z * Math.abs(velocity.z) * -1
+                ),this.meshAll[0].rotationQuaternion),
+                this.meshAll[0].getAbsolutePosition().add(new BABYLON.Vector3(0, 0, 0))
+                ); 
         }
     }
     applyRollForce(){
@@ -209,6 +285,27 @@ class Airplane {
         if(this.meshAll!==null){
             applyLocalForce(new BABYLON.Vector3( 0, 5 * this._pitch , 0), new BABYLON.Vector3(0, 0, -1), this.meshAll[0]);
             applyLocalForce(new BABYLON.Vector3( 0, 5 * -this._pitch , 0), new BABYLON.Vector3(0, 0, 1), this.meshAll[0]);
+            /*this.meshAll[0].physicsImpostor.applyForce(
+                vectorToWorldFrame(new BABYLON.Vector3(  0, 0, 5 * this._pitch),this.meshAll[0].rotationQuaternion),
+                this.meshAll[0].getAbsolutePosition().add(new BABYLON.Vector3(0, 1, 0))
+                ); */
+            /*this.meshAll[0].physicsImpostor.applyForce(
+                    vectorToWorldFrame(new BABYLON.Vector3(  0, 5 * -this._pitch , 0),this.meshAll[0].rotationQuaternion),
+                    this.meshAll[0].getAbsolutePosition().add(new BABYLON.Vector3(0, 0, 1))
+                    ); */
+        
+        }
+    }
+    applyThrustForce(){
+        if(this.meshAll!==null){
+            //applyLocalForce(new BABYLON.Vector3(  0, 0, 5* this._enginePower), new BABYLON.Vector3(0, 0, 0), this.meshAll[0]);
+            //applyLocalForce(new BABYLON.Vector3( 0, 0, 5* -this._enginePower), new BABYLON.Vector3(0, 0, 2), this.meshAll[0]);
+            //body.applyLocalForce(new CANNON.Vec3(0, 0, 3000 * speedModifier * this.enginePower), new CANNON.Vec3(0, 0, 2));
+            //var localForce = vectorToWorldFrame(new BABYLON.Vector3( 0, 0, 5* this._enginePower),this.meshAll[0].rotationQuaternion);
+            this.meshAll[0].physicsImpostor.applyForce(
+                vectorToWorldFrame(new BABYLON.Vector3( 0, 0, 3000 * this.speedModifier *this._enginePower),this.meshAll[0].rotationQuaternion),
+                this.meshAll[0].getAbsolutePosition().add(new BABYLON.Vector3(0, 0, 0))
+                ); 
         }
     }
 }
@@ -218,8 +315,16 @@ export default function scene(scene) {
     function makeGround(){
         // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
         //const ground = BABYLON.Mesh.CreateGround('ground1', 10, 10, 2, scene, false);
-        const ground = BABYLON.MeshBuilder.CreateBox("box", {height: 0.2, width: 20, depth: 20},scene);
+        const ground = BABYLON.MeshBuilder.CreateBox("box", {height: 2, width: 100, depth: 200},scene);
         ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.5}, scene);
+
+        var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
+        groundMat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        groundMat.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+        groundMat.backFaceCulling = false;
+        ground.material = groundMat;
+        ground.receiveShadows = true;
+
         return ground;
     }
 
@@ -237,46 +342,65 @@ export default function scene(scene) {
     var tinyPlane = new Airplane(scene);
 
     scene.onBeforeRenderObservable.add(() => {
-        if (inputMap["w"]) {
+        if (inputMap["z"]) {
             tinyPlane.lift += 0.1;
         }
-        if (inputMap["s"]) {
+        if (inputMap["x"]) {
             tinyPlane.lift -= 0.1;
         }
         if (inputMap["q"]) {
-            tinyPlane.roll = 1;
+            tinyPlane.roll = -1;
             tinyPlane.applyRollForce();
-            console.log(tinyPlane.roll);
+            //console.log(tinyPlane.roll);
             //tinyPlane.rudderControl(Math.PI/40);
         }
         if (inputMap["e"]) {
-            tinyPlane.roll = -1;
-            console.log(tinyPlane.roll);
+            tinyPlane.roll = 1;
+            //console.log(tinyPlane.roll);
             tinyPlane.applyRollForce();
             //tinyPlane.rudderControl(-Math.PI/40);
         }
         if (inputMap["a"]) {
-            tinyPlane.yaw = -1;
-            tinyPlane.applyYawForce();
-        }
-        if (inputMap["d"]) {
             tinyPlane.yaw = 1;
             tinyPlane.applyYawForce();
         }
-        if (inputMap["z"]) {
+        if (inputMap["d"]) {
+            tinyPlane.yaw = -1;
+            tinyPlane.applyYawForce();
+        }
+        if (inputMap["w"]) {
             tinyPlane.pitch = 1;
             tinyPlane.applyPitchForce();
         }
-        if (inputMap["x"]) {
+        if (inputMap["s"]) {
             tinyPlane.pitch = -1;
             tinyPlane.applyPitchForce();
+        }
+        if (inputMap["m"]) {
+            tinyPlane.enginePower = tinyPlane.enginePower + 0.05;
+            tinyPlane.speedModifier = 0.12;
+                    
+            console.log(tinyPlane.enginePower);
+        }else{
+            tinyPlane.enginePower = tinyPlane.enginePower - 0.01;
+            tinyPlane.speedModifier = 0;
+        }
+        if (inputMap["p"]) {
+            //scene.debugLayer.show();
+            showImpostors(scene);
+        }
+        if (inputMap["l"]) {
+            //scene.debugLayer.show();
+            var a = tinyPlane.velocity;
         }
       }
     );
 
     scene.registerBeforeRender(function () {
 		//box.physicsImpostor.applyForce(BABYLON.Vector3.Up().scale(forceMagnitude), box.getAbsolutePosition().add(contactLocalRefPoint));
-        tinyPlane.applyForceToBody();
+        tinyPlane.applyLiftForce();
+        tinyPlane.applyDragForce();
+        tinyPlane.applyThrustForce();
 	});
 
     const speed = 0.5;
@@ -286,8 +410,11 @@ export default function scene(scene) {
         const angle = time*speed;
 
     }
-
+    function getAirplane(){
+        return tinyPlane.meshAll[0];
+    }
     return {
-        update
+        update,
+        getAirplane
     }
 }

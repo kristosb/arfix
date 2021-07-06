@@ -33,7 +33,7 @@ export default function canvas(canvas)  {
     const camera = buildCamera(screenDimensions);
     //const sceneSubjects = createSceneSubjects(scene);
     const airplane = new Airplane(scene);
-
+    //camera.parent = airplane.getAirplane();
 
     function buildScene() {
         
@@ -57,12 +57,6 @@ export default function canvas(canvas)  {
         var gravityVector = new BABYLON.Vector3(0,-9.81, 0);
         var physicsPlugin = new BABYLON.CannonJSPlugin(undefined,undefined,CANNON);
         scene.enablePhysics(gravityVector, physicsPlugin);
-        //await Ammo();
-        //scene.enablePhysics(undefined, new BABYLON.AmmoJSPlugin());
-        //var gravity = new BABYLON.Vector3(0, -9.81, 0);
-        //scene.getPhysicsEngine().setGravity(gravity);
-        //box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, restitution: 0.5 }, scene);
-        //ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.5 }, scene);
         return null;
     }
 
@@ -76,7 +70,7 @@ export default function canvas(canvas)  {
         // Target the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
         camera.lowerRadiusLimit = 4;
-        camera.upperRadiusLimit = 155;
+        camera.upperRadiusLimit = 255;
         camera.wheelDeltaPercentage = 0.01;
         // Attach the camera to the canvas
         camera.attachControl(canvas, false);
