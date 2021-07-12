@@ -1,5 +1,6 @@
 //import * as BABYLON from "@babylonjs/core";
 import * as BABYLON from 'babylonjs';
+import  GRID   from 'babylonjs-materials';//'babylonjs-materials';
 //import Airplane from './Airplane';
 function createPhysicsImpostor(scene, entity, impostor, options, reparent) {
   if (entity == null) return;
@@ -23,8 +24,12 @@ export default function scene(scene) {
       function makeGround(){
         // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
         //const ground = BABYLON.Mesh.CreateGround('ground1', 10, 10, 2, scene, false);
-        const ground = BABYLON.MeshBuilder.CreateBox("box", {height: 2, width: 300, depth: 300},scene);
-        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.0, restitution: 0.5}, scene);
+        const ground = BABYLON.MeshBuilder.CreateBox("box", {height: 2, width: 100, depth: 100},scene);
+        //var mat = GRID.GridMaterial("groundMaterial", scene);
+        //var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
+        //ground.material =  mat;//new BABYLON.GridMaterial("groundMaterial", scene);
+        ground.setAbsolutePosition(new BABYLON.Vector3(0,-3,0) );
+        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.3, restitution: 0}, scene);
 
         var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
         groundMat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
@@ -32,6 +37,7 @@ export default function scene(scene) {
         groundMat.backFaceCulling = false;
         ground.material = groundMat;
         ground.receiveShadows = true;
+
 
         return ground;
     }
@@ -48,6 +54,7 @@ export default function scene(scene) {
       return result;
     }
     function debug(meshAll){
+      var worldFriction = 0;
       meshAll.map(mesh => {
         if(mesh.hasOwnProperty('metadata'))
           if(mesh.metadata!==null)
@@ -57,9 +64,12 @@ export default function scene(scene) {
                 mesh.isVisible = false;
                 //console.log(mesh.metadata.gltf.extras.type);
                 if (mesh.metadata.gltf.extras.type ==='box'){
-                  createPhysicsImpostor(scene, mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.1, restitution: 0  }, true);
+                  createPhysicsImpostor(scene, mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: worldFriction, restitution: 0  }, true);
                   //mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.0, restitution: 0.1}, scene);
                   //console.log("p")
+                }
+                if (mesh.metadata.gltf.extras.type ==='trimesh'){
+                  createPhysicsImpostor(scene, mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: worldFriction, restitution: 0  }, true);
                 }
               }
       });
@@ -76,8 +86,8 @@ export default function scene(scene) {
   }
     const cubes = [
       //makeInstance(1, 0x44aa88,  0, 0, -0.5),
-        //makeGround(),
-        makeWorld()
+        makeGround(),
+        //makeWorld()
         //new Airplane(scene)
       ];
 

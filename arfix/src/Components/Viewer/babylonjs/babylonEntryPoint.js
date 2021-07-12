@@ -1,18 +1,19 @@
 import SceneManager from './SceneManager';
 
 export default container => {
-    
-    const canvas = createCanvas(document, container);
-    const sceneManager = new SceneManager(canvas);
-    
-    
     let canvasHalfWidth;
     let canvasHalfHeight;
-
+    const canvas = createCanvas(document, container);
+    canvas.style.width = '100%';
+    canvas.style.height= '100%';
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    const sceneManager = new SceneManager(canvas);
+    
     bindEventListeners();
+    resizeCanvas();
     sceneManager.animate();
-    
-    
+     
     function createCanvas(document, container) {
         const canvas = document.createElement("canvas");    
         container.appendChild(canvas);   
@@ -27,7 +28,6 @@ export default container => {
     function resizeCanvas() {        
         canvas.style.width = '100%';
         canvas.style.height= '100%';
-        
         canvas.width  = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
 
