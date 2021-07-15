@@ -41,11 +41,11 @@ export default function canvas(canvas)  {
     //ground. = -30;// = new BABYLON.Vector3(0,-50,-500); 
     var tinyPlane = null;
     var vehicle = new Vehicle(scene,physics);
-    //var assetsManager = new BABYLON.AssetsManager(scene);
-	//var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "world.glb");
+    /*var assetsManager = new BABYLON.AssetsManager(scene);
+	var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "world.glb");
     //var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane180.glb");
-	/*meshWorldTask.onSuccess = function (task) {
-        debug(task.loadedMeshes);
+	meshWorldTask.onSuccess = function (task) {
+        debug(task.loadedMeshes); 
 	    task.loadedMeshes[0].position = BABYLON.Vector3.Zero();    
 	}	*/
 	/*meshAirplaneTask.onSuccess = function (task) {
@@ -202,7 +202,7 @@ export default function canvas(canvas)  {
         );*/
 
         scene.onBeforeRenderObservable.add(() => {
-
+            if(true){
             if (inputMap["z"]) {
                 tinyPlane.lift += 0.1;
             }
@@ -253,19 +253,16 @@ export default function canvas(canvas)  {
                 tinyPlane.speedModifier = 0;
                 }
             }*/
-            if (inputMap["p"]) {
-                //scene.debugLayer.show();
-                //camera.parent = tinyPlane.meshAll[5];
-                showImpostors(scene);
-            }
+
             if (inputMap["l"]) {
                 //scene.debugLayer.show();
                 var a = tinyPlane.velocity;
             }
+            
             if (inputMap["t"]) {
                 vehicle.forward(200);
-                console.log(inputMap["t"]);
-            }else{
+                //console.log(inputMap["t"]);
+            }else if(inputMap["t"] !== null){
                 vehicle.forward(0);
                 //console.log(inputMap["t"]);
                 inputMap["t"] = null;
@@ -273,21 +270,39 @@ export default function canvas(canvas)  {
 
             if (inputMap["g"]) {
                 vehicle.backward(200);
+            }else if (inputMap["g"] !== null){
+                vehicle.backward(0);
+                inputMap["g"] = null;
             }
+
+
             if (inputMap["f"]) {
                 vehicle.right(0.5);
-            }else
-                if (inputMap["h"]) {
-                    vehicle.left(0.5);
-                }else {
-                    vehicle.left(0);
-                }
+            }else if (inputMap["f"] !== null ){
+                vehicle.left(0);
+                inputMap["f"] = null;
+            }
+
+            if (inputMap["h"]) {
+                vehicle.left(0.5);
+            }else if(inputMap["h"] !== null){
+                vehicle.left(0);
+                inputMap["h"] = null;
+            }
+            
             if (inputMap["b"]) {
-                vehicle.brake(1000);
-            }else{
+                vehicle.brake(100);
+            }else if( inputMap["b"] !== null){
                 vehicle.unbrake();
+                inputMap["b"] = null;
             }
           }
+          if (inputMap["p"]) {
+            //scene.debugLayer.show();
+            //camera.parent = tinyPlane.meshAll[5];
+            showImpostors(scene);
+        }
+        }
         );
 
     }

@@ -41,6 +41,26 @@ export default function scene(scene) {
 
         return ground;
     }
+    function makeBox(){
+      // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
+      //const ground = BABYLON.Mesh.CreateGround('ground1', 10, 10, 2, scene, false);
+      const ground = BABYLON.MeshBuilder.CreateBox("box", {height: 2, width: 6, depth: 4},scene);
+      //var mat = GRID.GridMaterial("groundMaterial", scene);
+      //var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
+      //ground.material =  mat;//new BABYLON.GridMaterial("groundMaterial", scene);
+      ground.setAbsolutePosition(new BABYLON.Vector3(-10,3,10) );
+      ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 10, friction: 0.3, restitution: 0}, scene);
+
+      var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
+      groundMat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+      groundMat.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+      groundMat.backFaceCulling = false;
+      ground.material = groundMat;
+      ground.receiveShadows = true;
+
+
+      return ground;
+  }
     function makeWorld(){
       var world = loadMeshes("world.glb").then( x=>{
         debug(x.meshes); 
@@ -87,6 +107,7 @@ export default function scene(scene) {
     const cubes = [
       //makeInstance(1, 0x44aa88,  0, 0, -0.5),
         makeGround(),
+        makeBox()
         //makeWorld()
         //new Airplane(scene)
       ];
