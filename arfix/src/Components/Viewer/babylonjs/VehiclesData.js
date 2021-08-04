@@ -95,7 +95,7 @@ function createWheelMesh(scene, diameter, width, position){
     return wheelMesh;
 }
 
-export class carFromBoxesData extends VehicleData{
+export class CarFromBoxesData extends VehicleData{
     constructor(scene){
         super(scene);
         const bodySize = new BABYLON.Vector3(1, 2, 0.2);
@@ -129,6 +129,39 @@ export class carFromBoxesData extends VehicleData{
         wheelPosition.push( new BABYLON.Vector3());
         wheelPosition[3].copyFrom(chassisPosition);
         wheelPosition[3].addInPlace(new BABYLON.Vector3(chassisSize.x/2, suspLength, -chassisSize.y/2));
+        
+        return wheelPosition;
+    }
+}
+export class ThreeWheelCar extends VehicleData{
+    constructor(scene){
+        super(scene);
+        const bodySize = new BABYLON.Vector3(1, 2, 0.2);
+        this.chassisMesh = makebox(scene, bodySize, new BABYLON.Vector3(0, -0.5, 0), new BABYLON.Vector3(0,0,0).toQuaternion())
+        var wp = this.calculateWheelPosition(this.chassisMesh.position, bodySize);
+        this.wheelsMesh = [
+            createWheelMesh(scene, 1.0,0.25,wp[0]),
+            createWheelMesh(scene, 0.5,0.25,wp[1]),
+            createWheelMesh(scene, 0.5,0.25,wp[2]),
+        ];    
+        this.powerWheelsIndex = [1,2];
+        this.steeringWheelsIndex = [0];
+        this.brakeWheelsIndex = [1,2];
+    }
+    calculateWheelPosition(chassisPosition, chassisSize){
+        var wheelPosition  = [];
+        const suspLength =-chassisSize.z/2-0.2;//-chassisSize.z/2-0.30; //half of chassis height is point zero for wheel connection
+        wheelPosition.push( new BABYLON.Vector3());
+        wheelPosition[0].copyFrom(chassisPosition);
+        wheelPosition[0].addInPlace(new BABYLON.Vector3(0, suspLength, chassisSize.y/2));
+
+        wheelPosition.push( new BABYLON.Vector3());
+        wheelPosition[1].copyFrom(chassisPosition);
+        wheelPosition[1].addInPlace(new BABYLON.Vector3(-chassisSize.x/2, suspLength, -chassisSize.y/2));
+
+        wheelPosition.push( new BABYLON.Vector3());
+        wheelPosition[2].copyFrom(chassisPosition);
+        wheelPosition[2].addInPlace(new BABYLON.Vector3(chassisSize.x/2, suspLength, -chassisSize.y/2));
         
         return wheelPosition;
     }

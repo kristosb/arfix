@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs';
 import * as CANNON from 'cannon';
-import {CannonUtils} from './CanonUtils.js';
-import {carFromBoxesData} from './VehiclesData.js';
+import {CannonUtils} from './CannonUtils.js';
+import {CarFromBoxesData, ThreeWheelCar} from './VehiclesData.js';
 
 export default class Vehicle{
     constructor(scene, physics){
@@ -9,12 +9,12 @@ export default class Vehicle{
         this.physics = physics;
         this.vehicle = null;
         this.chassisBody = null;
-        const simpelCar = new carFromBoxesData(scene);
-        this.chassisMesh = simpelCar.chassisMesh;
-        this.wheelMeshes = simpelCar.wheelsMesh;
-        this.powerWheels = simpelCar.powerWheelsIndex;
-        this.steeringwheels = simpelCar.steeringWheelsIndex;
-        this.breakWheels = simpelCar.brakeWheelsIndex;
+        const carData = new ThreeWheelCar(scene);
+        this.chassisMesh = carData.chassisMesh;
+        this.wheelMeshes = carData.wheelsMesh;
+        this.powerWheels = carData.powerWheelsIndex;
+        this.steeringwheels = carData.steeringWheelsIndex;
+        this.breakWheels = carData.brakeWheelsIndex;
         this.createVehicle();
 
     }
@@ -29,6 +29,7 @@ export default class Vehicle{
 		mat.friction = 0.01;
         this.chassisBody = new CANNON.Body({ mass: 150 });
         this.chassisBody.material = mat;
+        this.chassisBody.position = CannonUtils.babylon2cannonVec3(this.chassisMesh.getAbsolutePosition());
         this.chassisBody.addShape(chassisShape);
         this.chassisMesh.computeWorldMatrix(true); 
 
@@ -58,7 +59,7 @@ export default class Vehicle{
         });
 
         this.vehicle.chassisBody.shapeOrientations[0] = CannonUtils.babylon2cannonQuat(this.chassisMesh.absoluteRotationQuaternion);
-
+        
 
         var that = this;
         this.wheelMeshes.forEach((wheelMesh, index)=>{
@@ -72,8 +73,6 @@ export default class Vehicle{
         });
         this.vehicle.addToWorld(world);
         
-        //var that = this;
-        
         //world.addEventListener('postStep', function(){
         this.scene.registerBeforeRender(function () {
             for (var i = 0; i < that.vehicle.wheelInfos.length; i++) {
@@ -81,9 +80,7 @@ export default class Vehicle{
                 var t = that.vehicle.wheelInfos[i].worldTransform; 
                 that.wheelMeshes[i].position.copyFrom( CannonUtils.cannon2babylonVec3(t.position) );
                 that.wheelMeshes[i].rotationQuaternion.copyFrom( CannonUtils.cannon2babylonQuat(t.quaternion) );
-
             }
-
             that.chassisMesh.position.copyFrom( CannonUtils.cannon2babylonVec3( that.vehicle.chassisBody.position));
             const rot = new CANNON.Quaternion();
             that.vehicle.chassisBody.quaternion.mult(that.vehicle.chassisBody.shapeOrientations[0],rot);
