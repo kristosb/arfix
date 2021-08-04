@@ -72,7 +72,7 @@ export default class Vehicle{
         });
         this.vehicle.addToWorld(world);
         
-        var that = this;
+        //var that = this;
         
         //world.addEventListener('postStep', function(){
         this.scene.registerBeforeRender(function () {
