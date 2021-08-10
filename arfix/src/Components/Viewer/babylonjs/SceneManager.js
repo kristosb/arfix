@@ -13,6 +13,7 @@ import * as CANNON from 'cannon';
 import SceneSubject from './SceneSubject';
 import Airplane from './Airplane';
 import Vehicle from './Vehicle';
+import {ThreeWheelCar,ThreeWheelAirplane} from './VehiclesData.js';
 //import * as BABYLON from 'babylonjs';
 //import { default as Ammo } from 'ammo.js/builds/ammo';
 var showAxis = function (size, scene) {
@@ -75,7 +76,17 @@ export default function canvas(canvas)  {
     var ground = new SceneSubject();
     //ground. = -30;// = new BABYLON.Vector3(0,-50,-500); 
     var tinyPlane = null;
-    var vehicle = new Vehicle(scene,physics);
+    var vehicle = null;
+    var assetsManager = new BABYLON.AssetsManager(scene);
+    var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane.glb");
+    //var del = new ThreeWheelCar(scene);
+    //console.log(del.chassisMesh);
+    meshAirplaneTask.onSuccess = function (task) {
+        //tinyPlane = new ThreeWheelAirplane(scene, task.loadedMeshes);
+        vehicle = new Vehicle(scene, new ThreeWheelAirplane(scene, task.loadedMeshes));
+	}
+    assetsManager.load();
+    //var vehicle = new Vehicle(scene,physics);
     /*var assetsManager = new BABYLON.AssetsManager(scene);
 	var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "world.glb");
     //var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane180.glb");
@@ -238,7 +249,7 @@ export default function canvas(canvas)  {
         );*/
 
         scene.onBeforeRenderObservable.add(() => {
-            if(true){
+            if(vehicle!==null){
             if (inputMap["z"]) {
                 tinyPlane.lift += 0.1;
             }
@@ -296,7 +307,7 @@ export default function canvas(canvas)  {
             }
             
             if (inputMap["t"]) {
-                vehicle.forward(200);
+                vehicle.forward(30);
                 //console.log(inputMap["t"]);
             }else if(inputMap["t"] !== null){
                 vehicle.forward(0);

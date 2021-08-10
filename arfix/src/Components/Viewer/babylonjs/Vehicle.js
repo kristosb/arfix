@@ -4,12 +4,12 @@ import {CannonUtils} from './CannonUtils.js';
 import {CarFromBoxesData, ThreeWheelCar} from './VehiclesData.js';
 
 export default class Vehicle{
-    constructor(scene, physics){
+    constructor(scene, carData){
         this.scene = scene;
-        this.physics = physics;
+        //this.physics = physics;
         this.vehicle = null;
         this.chassisBody = null;
-        const carData = new ThreeWheelCar(scene);
+        //const carData = new ThreeWheelCar(scene);
         this.chassisMesh = carData.chassisMesh;
         this.wheelMeshes = carData.wheelsMesh;
         this.powerWheels = carData.powerWheelsIndex;
@@ -23,21 +23,21 @@ export default class Vehicle{
         var world = this.scene.getPhysicsEngine().getPhysicsPlugin().world;
         //width, height, length
         this.chassisMesh.computeWorldMatrix(true); 
-
+        console.log(this.chassisMesh.getAbsoluteSize());
         var chassisShape = new CANNON.Box(CannonUtils.babylon2cannonVec3(this.chassisMesh.getAbsoluteSize().multiplyInPlace(new BABYLON.Vector3(0.5,0.5,0.5)))); //cannon makes box twice the size
         let mat = new CANNON.Material('Mat');
 		mat.friction = 0.01;
-        this.chassisBody = new CANNON.Body({ mass: 150 });
+        this.chassisBody = new CANNON.Body({ mass: 50 });
         this.chassisBody.material = mat;
         this.chassisBody.position = CannonUtils.babylon2cannonVec3(this.chassisMesh.getAbsolutePosition());
         this.chassisBody.addShape(chassisShape);
         this.chassisMesh.computeWorldMatrix(true); 
 
-        var options = {
+       /* var options = {
             radius: 0.25,
             directionLocal: new CANNON.Vec3(0, -1, 0),
             suspensionStiffness: 30,
-            suspensionRestLength: 0.1,//0.3,
+            suspensionRestLength: 0.2,//0.3,
             frictionSlip: 5,
             dampingRelaxation: 2.3,
             dampingCompression: 4.4,
@@ -45,9 +45,18 @@ export default class Vehicle{
             rollInfluence:  0,
             axleLocal: new CANNON.Vec3(-1, 0, 0),
             chassisConnectionPointLocal: new CANNON.Vec3(1,0,1),
-            maxSuspensionTravel: 0.3,
+            maxSuspensionTravel: 0.3,//0.3
             customSlidingRotationalSpeed: -30,
             useCustomSlidingRotationalSpeed: true,
+        };*/
+        var options = {
+            directionLocal: new CANNON.Vec3(0, -1, 0),
+            axleLocal: new CANNON.Vec3(-1, 0, 0),
+            chassisConnectionPointLocal: new CANNON.Vec3(1,0,1),
+            suspensionStiffness: 150,
+			suspensionRestLength: 0.25,
+			dampingRelaxation: 5,
+			dampingCompression: 5,
         };
 
         // Create the vehicle
@@ -68,11 +77,12 @@ export default class Vehicle{
                 wheelMesh.getPositionExpressedInLocalSpace().x,
                 wheelMesh.getPositionExpressedInLocalSpace().y-that.chassisMesh.getAbsolutePosition().y,
                 wheelMesh.getPositionExpressedInLocalSpace().z);
+            console.log(pos);
             options.chassisConnectionPointLocal.copy(CannonUtils.babylon2cannonVec3( pos )); 
             that.vehicle.addWheel(options); 
         });
         this.vehicle.addToWorld(world);
-        
+        console.log(that.vehicle.chassisBody.position);
         //world.addEventListener('postStep', function(){
         this.scene.registerBeforeRender(function () {
             for (var i = 0; i < that.vehicle.wheelInfos.length; i++) {
@@ -97,10 +107,10 @@ export default class Vehicle{
         this.powerWheels.forEach(x=> this.vehicle.applyEngineForce(force, x));
     }
     right(force){
-        this.steeringwheels.forEach(x => this.vehicle.setSteeringValue(-force, x));
+        this.steeringwheels.forEach(x => this.vehicle.setSteeringValue(force, x));
     }
     left(force){
-        this.steeringwheels.forEach(x => this.vehicle.setSteeringValue(force, x));
+        this.steeringwheels.forEach(x => this.vehicle.setSteeringValue(-force, x));
     }
     brake(force){
         this.breakWheels.forEach(x => this.vehicle.setBrake(force, x));

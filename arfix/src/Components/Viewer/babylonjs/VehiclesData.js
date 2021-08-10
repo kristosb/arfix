@@ -166,3 +166,26 @@ export class ThreeWheelCar extends VehicleData{
         return wheelPosition;
     }
 }
+export class ThreeWheelAirplane extends VehicleData{
+    constructor(scene, meshAll){
+        super(scene);
+        meshAll.map(mesh=>{
+            console.log(mesh.id);
+        });
+        this.chassisMesh = meshAll[11];
+        console.log(meshAll[11]);
+        console.log(this.chassisMesh.id);
+        this.wheelsMesh = [
+            meshAll[8],
+            meshAll[9],
+            meshAll[10]
+        ]; 
+        this.wheelsMesh.map(mesh=>{
+            console.log(mesh.id);
+        });   
+        this.powerWheelsIndex = [1,2];
+        this.steeringWheelsIndex = [0];
+        this.brakeWheelsIndex = [0,1,2];
+    }
+
+}
