@@ -28,8 +28,8 @@ export default function scene(scene) {
         //var mat = GRID.GridMaterial("groundMaterial", scene);
         //var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
         //ground.material =  mat;//new BABYLON.GridMaterial("groundMaterial", scene);
-        ground.setAbsolutePosition(new BABYLON.Vector3(0,-3,0) );
-        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.3, restitution: 0}, scene);
+        ground.setAbsolutePosition(new BABYLON.Vector3(0,-1,0) );
+        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.3, restitution: 0.7}, scene);
 
         var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
         groundMat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
@@ -48,7 +48,7 @@ export default function scene(scene) {
       //var mat = GRID.GridMaterial("groundMaterial", scene);
       //var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
       //ground.material =  mat;//new BABYLON.GridMaterial("groundMaterial", scene);
-      ground.setAbsolutePosition(new BABYLON.Vector3(-10,3,10) );
+      ground.setAbsolutePosition(new BABYLON.Vector3(-10,1,10) );
       ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 10, friction: 0.3, restitution: 0}, scene);
 
       var groundMat = new BABYLON.StandardMaterial("groundMat", scene);

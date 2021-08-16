@@ -6,14 +6,19 @@ import Hud from './Hud';*/
 ///Users/krystian/Documents/repositories/arfix/arfix/public/msft-lod.gltf
 //import ball from '../../../../public/msft-lod.gltf';
 //import * as BABYLON from "@babylonjs/core";
+
 import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
+import * as Ammo from 'ammojs';
 //import * as CANNON from './cannon.js';
-import * as CANNON from 'cannon';
+//import * as CANNON from 'cannon';
+
+
 import SceneSubject from './SceneSubject';
-import Airplane from './Airplane';
-import Vehicle from './Vehicle';
-import {ThreeWheelCar,ThreeWheelAirplane} from './VehiclesData.js';
+//import Airplane from './Airplane';
+//import { CarFromBoxesData, ThreeWheelCar } from './VehiclesData';
+import VehicleAmmo from './VehicleAmmo';
+import {ThreeWheelCar,ThreeWheelAirplane,CarFromBoxesData} from './VehiclesData.js';
 //import * as BABYLON from 'babylonjs';
 //import { default as Ammo } from 'ammo.js/builds/ammo';
 var showAxis = function (size, scene) {
@@ -72,21 +77,24 @@ export default function canvas(canvas)  {
     const scene = buildScene();
     const physics = buildGravity();
     const camera = buildCamera(screenDimensions);
-    camera.position = new BABYLON.Vector3(-4,-1.8,-6);
+    camera.position = new BABYLON.Vector3(-4,0.1,-6);
     var ground = new SceneSubject();
     //ground. = -30;// = new BABYLON.Vector3(0,-50,-500); 
     var tinyPlane = null;
     var vehicle = null;
+    //vehicle = new VehicleAmmo(scene, new CarFromBoxesData(scene));
     var assetsManager = new BABYLON.AssetsManager(scene);
     var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane.glb");
-    //var del = new ThreeWheelCar(scene);
-    //console.log(del.chassisMesh);
     meshAirplaneTask.onSuccess = function (task) {
         //tinyPlane = new ThreeWheelAirplane(scene, task.loadedMeshes);
-        vehicle = new Vehicle(scene, new ThreeWheelAirplane(scene, task.loadedMeshes));
+        //task.loadedMeshes[0].position.
+        //vehicle = new Vehicle(scene, new ThreeWheelCar(scene));
+        //vehicle = new Vehicle(scene, new ThreeWheelAirplane(scene, task.loadedMeshes));
+        vehicle = new VehicleAmmo(scene, new ThreeWheelAirplane(scene, task.loadedMeshes));
+        
 	}
     assetsManager.load();
-    //var vehicle = new Vehicle(scene,physics);
+    //var vehicle = new Vehicle(scene,new ThreeWheelCar(scene));
     /*var assetsManager = new BABYLON.AssetsManager(scene);
 	var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "world.glb");
     //var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane180.glb");
@@ -187,7 +195,8 @@ export default function canvas(canvas)  {
     }*/
     function buildGravity() {
         var gravityVector = new BABYLON.Vector3(0,-9.81, 0);
-        var physicsPlugin = new BABYLON.CannonJSPlugin(undefined,undefined,CANNON);
+        var physicsPlugin = new BABYLON.AmmoJSPlugin(undefined, Ammo, undefined);
+        //var physicsPlugin = new BABYLON.CannonJSPlugin(undefined,undefined,CANNON);
         scene.enablePhysics(gravityVector, physicsPlugin);
         return physicsPlugin;
     }
@@ -307,7 +316,7 @@ export default function canvas(canvas)  {
             }
             
             if (inputMap["t"]) {
-                vehicle.forward(30);
+                vehicle.forward(20);
                 //console.log(inputMap["t"]);
             }else if(inputMap["t"] !== null){
                 vehicle.forward(0);
@@ -316,7 +325,7 @@ export default function canvas(canvas)  {
             }
 
             if (inputMap["g"]) {
-                vehicle.backward(200);
+                vehicle.backward(20);
             }else if (inputMap["g"] !== null){
                 vehicle.backward(0);
                 inputMap["g"] = null;
