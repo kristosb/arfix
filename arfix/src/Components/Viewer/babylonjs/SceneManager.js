@@ -18,7 +18,7 @@ import SceneSubject from './SceneSubject';
 //import Airplane from './Airplane';
 //import { CarFromBoxesData, ThreeWheelCar } from './VehiclesData';
 import VehicleAmmo from './VehicleAmmo';
-import {ThreeWheelCar,ThreeWheelAirplane,CarFromBoxesData, AirplaneChassis} from './VehiclesData.js';
+import {ThreeWheelCar,ThreeWheelAirplane,CarFromBoxesData, AirplaneChassis, AirplaneFromMesh} from './VehiclesData.js';
 //import * as BABYLON from 'babylonjs';
 //import { default as Ammo } from 'ammo.js/builds/ammo';
 var showAxis = function (size, scene) {
@@ -83,18 +83,19 @@ export default function canvas(canvas)  {
     //ground. = -30;// = new BABYLON.Vector3(0,-50,-500); 
     var tinyPlane = null;
     var vehicle = null;
-    vehicle = new VehicleAmmo(scene, new AirplaneChassis(scene));
-    /*var assetsManager = new BABYLON.AssetsManager(scene);
+    //vehicle = new VehicleAmmo(scene, new AirplaneChassis(scene));
+    var assetsManager = new BABYLON.AssetsManager(scene);
     var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane.glb");
     meshAirplaneTask.onSuccess = function (task) {
         //tinyPlane = new ThreeWheelAirplane(scene, task.loadedMeshes);
         //task.loadedMeshes[0].position.
         //vehicle = new Vehicle(scene, new ThreeWheelCar(scene));
         //vehicle = new Vehicle(scene, new ThreeWheelAirplane(scene, task.loadedMeshes));
-        vehicle = new VehicleAmmo(scene, new ThreeWheelAirplane(scene, task.loadedMeshes));
+        //vehicle = new VehicleAmmo(scene, new ThreeWheelAirplane(scene, task.loadedMeshes));
+        vehicle = new VehicleAmmo(scene, new AirplaneFromMesh(scene, task.loadedMeshes));
         
 	}
-    assetsManager.load();*/
+    assetsManager.load();
     //var vehicle = new Vehicle(scene,new ThreeWheelCar(scene));
     /*var assetsManager = new BABYLON.AssetsManager(scene);
 	var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "world.glb");

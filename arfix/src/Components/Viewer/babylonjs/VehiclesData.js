@@ -486,6 +486,84 @@ export class AirplaneChassis extends VehicleData{
 
 }
 
+////
+
+export class AirplaneFromMesh extends VehicleData{
+    /**    
+     * Projects a point to a plane along a ray starting from the camera origin and directed towards the point. 
+     * @param {BABYLON.Scene} scene      
+     * @param {[BABYLON.Mesh]} meshAll
+     */
+     constructor(scene, meshAll){
+        super(scene);
+        meshAll[0].translate(new BABYLON.Vector3.Up(),0.15,BABYLON.Space.WORLD);
+        const massOffset = new BABYLON.Vector3(0, 0.1, 0.05);
+        const mass = 20;
+        const isColiderVisible = false;
+        var settings = {
+            suspensionStiffness: 27,
+            suspensionDamping: 0.3,
+            suspensionCompression: 4.4,
+            suspensionRestLength: 0.3,
+            rollInfluence: 0.01,
+        }
+        this.wheelsMesh = [
+            meshAll[8], meshAll[9], meshAll[10]
+        ];  
+        this.wheelsMesh .forEach(m=>meshAll[0].removeChild(m));
+        meshAll[0].translate(new BABYLON.Vector3.Up(),0.8,BABYLON.Space.WORLD);
+
+        const radius = 0.225/2;
+        // (widht, heigth, length) of a car
+        this.wheels =
+            [
+                {pos: this.wheelsMesh[0].position, radius: radius, isFront: true, params: settings},
+                {pos: this.wheelsMesh[1].position, radius: radius, isFront: false, params: settings},
+                {pos: this.wheelsMesh[2].position, radius: radius, isFront: false, params: settings},
+            ];
+        this.wheels.forEach(x=>x.pos.addInPlace(massOffset));
+
+        const bodySize = new BABYLON.Vector3(0.3, 0.3, 0.3);
+
+        //chassis offset only visual because of the root mass offset
+        //chassis is the volume that represents weight, its used for vehicle physisc but not collisions
+        var chassis = makebox(scene, bodySize, new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.1, .1, .1), "chassis");
+        chassis.isVisible = true;       
+        
+        meshAll[0].removeChild(meshAll[7])
+        var visualMeshes = [meshAll[7]];//[rootVisualMesh];
+        //add all meshes to chassis
+        visualMeshes.forEach(vm=>{chassis.addChild(vm)});
+
+        this.collidersCreate(meshAll[0],chassis,
+                            [meshAll[11],meshAll[12], meshAll[13], meshAll[14], meshAll[15], meshAll[16], meshAll[17]],
+                            BABYLON.PhysicsImpostor.BoxImpostor,
+                            isColiderVisible);
+        this.collidersCreate(meshAll[0],chassis,
+                            [meshAll[18], meshAll[19], meshAll[20], meshAll[21], meshAll[22]],
+                            BABYLON.PhysicsImpostor.CapsuleImpostor,
+                            isColiderVisible);
+        createPhysicsImpostor(this.scene, chassis, BABYLON.PhysicsImpostor.NoImpostor, { mass: mass, friction: 1,restitution:0.1}, true);
+
+        this.powerWheelsIndex = [1,2];
+        this.steeringWheelsIndex = [0];
+        this.brakeWheelsIndex = [1,2];
+        this.chassisMesh = chassis;
+
+        meshAll[0].dispose();       //not needed anymore since we had do assign a new mesh root for raycast vehicle
+    }
+    collidersCreate(oldRoot, newRoot, meshes, impostorType, isVisible){
+        var coliderMeshesBox = meshes;
+        coliderMeshesBox.forEach(m=>oldRoot.removeChild(m));
+        coliderMeshesBox.forEach(cm=>{
+            newRoot.addChild(cm);
+            cm.isVisible = isVisible;
+        });
+        coliderMeshesBox.forEach(cm=>{createPhysicsImpostor(this.scene, cm, impostorType, { mass: 0, friction: 1,restitution:0.1}, true)});           
+    }
+
+}
+
 function createPhysicsImpostor(scene, entity, impostor, options, reparent) {
     if (entity == null) return;
     entity.checkCollisions = false;
@@ -494,4 +572,18 @@ function createPhysicsImpostor(scene, entity, impostor, options, reparent) {
     entity.physicsImpostor = new BABYLON.PhysicsImpostor(entity, impostor, options, scene);
     //console.log(entity.physicsImpostor.physicsBody);
     if (reparent === true) entity.parent = parent;
+};
+
+BABYLON.Mesh.prototype.getAbsoluteSize = function() {
+    if(!this.__size){
+        this.__size = BABYLON.Vector3.Zero();
+    }
+    let scaling = this.scaling;
+    //console.log(scaling);
+    let bounds = this.getBoundingInfo();
+    this.__size.x = Math.abs(bounds.minimum.x - bounds.maximum.x)*scaling.x;
+    this.__size.z = Math.abs(bounds.minimum.y - bounds.maximum.y)*scaling.y;
+    this.__size.y = Math.abs(bounds.minimum.z - bounds.maximum.z)*scaling.z;
+
+    return this.__size;
 };
