@@ -48,8 +48,8 @@ class VehicleData {
     }
 }
 
-function makebox(scene, size, position, rotation, color = new BABYLON.Color3(0.5, 0.6, 0.87)){
-    var box =  BABYLON.MeshBuilder.CreateBox("Box", {width:size.x,depth:size.y,height:size.z}, scene);
+function makebox(scene, size, position, rotation, color = new BABYLON.Color3(0.5, 0.6, 0.87), name= "box"){
+    var box =  BABYLON.MeshBuilder.CreateBox(name, {width:size.x,depth:size.y,height:size.z}, scene);
     box.rotationQuaternion = rotation;
     box.position = position;
     var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
@@ -419,14 +419,12 @@ export class ThreeWheelAirplane extends VehicleData{
     };
 
 }
-function chassisSizeFromWheelPos(wheels, scale){
 
-
-}
 export class AirplaneChassis extends VehicleData{
     constructor(scene){
         super(scene);
-        var massOffset = new BABYLON.Vector3(0, 0, 0);
+        const massOffset = new BABYLON.Vector3(0, 0, -0.3);
+        const mass = 20;
         var settings = {
             suspensionStiffness: 17,
             suspensionDamping: 0.3,
@@ -434,7 +432,7 @@ export class AirplaneChassis extends VehicleData{
             suspensionRestLength: 0.6,
             rollInfluence: 0.2,
         }
-        // (widht, heigth, length)
+        // (widht, heigth, length) of a car
         this.wheels =
             [
                 {pos: new BABYLON.Vector3(0.5, 0, 1), radius: 0.25, isFront: true, params: settings},
@@ -444,48 +442,56 @@ export class AirplaneChassis extends VehicleData{
             ];
         this.wheels.forEach(x=>x.pos.addInPlace(massOffset));
 
+        this.wheelsMesh = [
+            createWheelMesh(scene, 2*this.wheels[0].radius, 0.25, this.wheels[0].pos),
+            createWheelMesh(scene, 2*this.wheels[1].radius, 0.25, this.wheels[1].pos),
+            createWheelMesh(scene, 2*this.wheels[2].radius, 0.25, this.wheels[2].pos),
+            createWheelMesh(scene, 2*this.wheels[3].radius, 0.25, this.wheels[3].pos)
+        ];  
 
-        const bodySize = new BABYLON.Vector3(2, 2, 0.2);
+        const bodySize = new BABYLON.Vector3(1, 1, 0.4);
 
-        var chassis = makebox(scene, bodySize, new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion())
+        //chassis offset only visual because of the root mass offset
+        //chassis is the volume that represents weight, its used for vehicle physisc but not collisions
+        var chassis = makebox(scene, bodySize, new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.1, .1, .1), "chassis");
                
-        var rootMesh = new BABYLON.Mesh("", scene);
-        var collisionMesh = makebox(scene, bodySize, new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.2, .3, .6));
-        var cabinMesh = makebox(scene, new BABYLON.Vector3(1, 1, 1), new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.2, .3, .6));
-        rootMesh.addChild(cabinMesh);
+        var rootVisualMesh = new BABYLON.Mesh("root", scene);
+        var collisionMesh = makebox(scene, new BABYLON.Vector3(2, 2, 0.2), new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.2, .3, .6), "col");
+        var collisionMesh1 = makebox(scene, new BABYLON.Vector3(1, 2.5, 0.2) , new BABYLON.Vector3(0, 1, -1), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.2, .3, .6), "col1");
+        var collisionMesh2 = makebox(scene, new BABYLON.Vector3(0.5, 0.5, 0.5) , new BABYLON.Vector3(0, 1.2, 1), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.2, .3, .6), "col2");
 
-        var visualMeshes = [rootMesh];
-        var coliderMeshes = [collisionMesh];
+        var cabinMesh = makebox(scene, new BABYLON.Vector3(1, 1, 1), new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.4, .3, .1), "cabin");
+        rootVisualMesh.addChild(cabinMesh);
+
+        var visualMeshes = [rootVisualMesh];
+        var coliderMeshes = [collisionMesh, collisionMesh1, collisionMesh2];
   
-        var isColiderVisible = false;
+        var isColiderVisible = true;
+        chassis.isVisible = true;
         coliderMeshes.forEach(cm=>{
             chassis.addChild(cm);
-            chassis.isVisible = isColiderVisible;
+            cm.isVisible = isColiderVisible;
         });
+        //add all meshes to chassis
         visualMeshes.forEach(vm=>{chassis.addChild(vm)});
 
-        coliderMeshes.forEach(cm=>{this.createPhysicsImpostor(this.scene, cm, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 1,restitution:0.1}, true)});
-                
-        this.createPhysicsImpostor(this.scene, chassis, BABYLON.PhysicsImpostor.NoImpostor, { mass: 20, friction: 1,restitution:0.1}, true);
+        coliderMeshes.forEach(cm=>{createPhysicsImpostor(this.scene, cm, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 1,restitution:0.1}, true)});           
+        createPhysicsImpostor(this.scene, chassis, BABYLON.PhysicsImpostor.NoImpostor, { mass: mass, friction: 1,restitution:0.1}, true);
 
-        this.wheelsMesh = [
-            createWheelMesh(scene, 2*this.wheels[0].radius, 0.25,this.wheels[0].pos),
-            createWheelMesh(scene, 2*this.wheels[1].radius,0.25,this.wheels[1].pos),
-            createWheelMesh(scene, 2*this.wheels[2].radius,0.25,this.wheels[2].pos),
-            createWheelMesh(scene, 2*this.wheels[3].radius,0.25,this.wheels[3].pos)
-        ];    
         this.powerWheelsIndex = [2,3];
         this.steeringWheelsIndex = [0,1];
         this.brakeWheelsIndex = [0,1,2,3];
         this.chassisMesh = chassis;
     }
-    createPhysicsImpostor(scene, entity, impostor, options, reparent) {
-        if (entity == null) return;
-        entity.checkCollisions = false;
-        const parent = entity.parent;
-        if (reparent === true) entity.parent = null;
-        entity.physicsImpostor = new BABYLON.PhysicsImpostor(entity, impostor, options, scene);
-        //console.log(entity.physicsImpostor.physicsBody);
-        if (reparent === true) entity.parent = parent;
-    };
+
 }
+
+function createPhysicsImpostor(scene, entity, impostor, options, reparent) {
+    if (entity == null) return;
+    entity.checkCollisions = false;
+    const parent = entity.parent;
+    if (reparent === true) entity.parent = null;
+    entity.physicsImpostor = new BABYLON.PhysicsImpostor(entity, impostor, options, scene);
+    //console.log(entity.physicsImpostor.physicsBody);
+    if (reparent === true) entity.parent = parent;
+};

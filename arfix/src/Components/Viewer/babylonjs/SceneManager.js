@@ -355,10 +355,12 @@ export default function canvas(canvas)  {
             }
           }
           if (inputMap["p"]) {
-            //scene.debugLayer.show();
-            //camera.parent = tinyPlane.meshAll[5];
             showImpostors(scene);
-        }
+            }
+            if (inputMap["o"]) {
+                scene.debugLayer.show();
+
+            }
         }
         );
 
