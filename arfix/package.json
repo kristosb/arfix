@@ -10,6 +10,7 @@
     "1ammo.js": "github:kripken/ammo.js",
     "ammojs": "^0.0.2",
     "babylonjs": "^4.2.0",
+    "babylonjs-gui": "^4.2.0",
     "babylonjs-loaders": "^4.2.0",
     "babylonjs-materials": "^4.2.0",
     "cannon": "^0.6.2",

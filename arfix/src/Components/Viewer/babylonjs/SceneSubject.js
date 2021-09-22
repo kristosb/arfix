@@ -23,8 +23,9 @@ export default function scene(scene) {
       }
       function makeGround(){
         // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
-        //const ground = BABYLON.Mesh.CreateGround('ground1', 10, 10, 2, scene, false);
-        const ground = BABYLON.MeshBuilder.CreateBox("box", {height: 2, width: 100, depth: 100},scene);
+        const ground = BABYLON.Mesh.CreateGround('ground1', 500, 500, 2, scene, false);
+        //const ground = BABYLON.MeshBuilder.CreateBox("box", {height: 2, width: 100, depth: 100},scene);
+        //ground.scaling =new BABYLON.Vector3(10,1,10);
         //var mat = GRID.GridMaterial("groundMaterial", scene);
         //var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
         //ground.material =  mat;//new BABYLON.GridMaterial("groundMaterial", scene);

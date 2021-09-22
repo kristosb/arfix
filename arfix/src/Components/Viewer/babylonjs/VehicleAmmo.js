@@ -1,8 +1,6 @@
 import * as BABYLON from 'babylonjs';
 import * as Ammo from 'ammojs';
-//import {CannonUtils} from './CannonUtils.js';
 
-import {CarFromBoxesData, ThreeWheelCar} from './VehiclesData.js';
 BABYLON.Mesh.prototype.getAbsoluteSize = function() {
     if(!this.__size){
         this.__size = BABYLON.Vector3.Zero();
@@ -61,7 +59,7 @@ export default class VehicleAmmo{
             wheelInfo.set_m_rollInfluence(wheel.params.rollInfluence);
             //that.wheelMeshes[index] = that.createWheelMesh(radius, 0.25);
         });
-
+        // if updated in the main animation loop artifacts of wheels not catching up at high speed visible
         this.scene.registerBeforeRender(function () {
             var tm, p, q, i;
 			var n = that.vehicle.getNumWheels();
@@ -77,6 +75,20 @@ export default class VehicleAmmo{
         	      
     }
  
+   /* update(){
+        var that = this;
+        var tm, p, q, i;
+        var n = that.vehicle.getNumWheels();
+        for (i = 0; i < n; i++) {
+            that.vehicle.updateWheelTransform(i, true);
+            tm = that.vehicle.getWheelTransformWS(i);
+            p = tm.getOrigin();
+            q = tm.getRotation();
+            that.carData.wheelsMesh[i].position.set(p.x(), p.y(), p.z());
+            that.carData.wheelsMesh[i].rotationQuaternion.set(q.x(), q.y(), q.z(), q.w());
+        }
+    }
+*/
     forward(force){
         this.carData.powerWheelsIndex.forEach(x=> this.vehicle.applyEngineForce(force, x));
     }
@@ -95,4 +107,7 @@ export default class VehicleAmmo{
     unbrake(){
         this.carData.brakeWheelsIndex.forEach(x => this.vehicle.setBrake(0, x));
     }
+    /*get impostor(){
+        return this.carData.chassisMesh.physicsImpostor;
+    }*/
 }
