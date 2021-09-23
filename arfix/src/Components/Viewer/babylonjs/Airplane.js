@@ -2,7 +2,15 @@
 import * as BABYLON from 'babylonjs';
 
 // Use physics viewer to display impostors
+let getChildRotation = function(child){ //return the rotation of a child of a parent object by using a temporary World Matrix
+    var scale = new BABYLON.Vector3(0, 0, 0);
+    var rotation = new BABYLON.Quaternion();
+    var translation = new BABYLON.Vector3(0,0,0);
 
+    var tempWorldMatrix = child.getWorldMatrix();
+    tempWorldMatrix.decompose(scale, rotation, translation);
+    return rotation;
+}
 
 var vmult = function(v,q){
     var target =  new BABYLON.Vector3();
@@ -58,11 +66,11 @@ export default class Airplane {
     /**    
      * Projects a point to a plane along a ray starting from the camera origin and directed towards the point. 
      * @param {BABYLON.Scene} scene      
-     * @param {[BABYLON.Mesh]} chassis
-     *  @param {[BABYLON.Mesh]} rudder
-     *  @param {[BABYLON.Mesh]} rotor
+     * @param {BABYLON.Mesh} chassis
+     *  @param {BABYLON.Mesh} rudder
+     *  @param {BABYLON.Mesh} rotor
      */
-    constructor(scene, chassis, rudder, rotor ){
+    constructor(scene, chassis, controls){
         this.scene = scene;
         //this.animationGroup = null;
         this._lift = 50;
@@ -78,10 +86,17 @@ export default class Airplane {
         this._enginePowerLimit = 1;//1
         this.speedModifier = 0.03;
         this.collision = chassis;
-        this.rudder = rudder;
-        this.rotor = rotor;
+        this.rudder = controls.rudder;
+        this.rotor = controls.rotor;
+        this.leftAileron = controls.leftAileron;
+        this.rightAileron = controls.rightAileron;
+        this.leftElevator = controls.leftElevator;
+        this.rightElevator = controls.rightElevator;
         //this.registerForces();
-        //this.addAnimations();
+        this.addAnimations();
+        this.animationGroup.play(true);
+        this.animationGroup.speedRatio = 1;
+        this.controlsInitialize();
     }
 
     set lift(val){
@@ -163,21 +178,37 @@ export default class Airplane {
     addAnimations(){
         this.rotorSpin(this.rotor);
     }
-
+    controlsInitialize(){
+        this.rudderZeroRotation = this.rudder.rotationQuaternion.toEulerAngles();
+        this.leftAileronZeroRotation = this.leftAileron.rotationQuaternion.toEulerAngles();
+        this.rightAileronZeroRotation = this.rightAileron.rotationQuaternion.toEulerAngles();
+        this.leftElevatorZeroRotation = this.leftElevator.rotationQuaternion.toEulerAngles();
+        this.rightElevatorZeroRotation = this.rightElevator.rotationQuaternion.toEulerAngles();
+    }
     meshRootPosition(x,y,z){       
         this.collision.setAbsolutePosition(x,y,z);
         
     }
-    /*moveForward(speed){
-        this.collision.moveWithCollisions(this.collision.forward.scaleInPlace(speed));
-        this.animationGroup.play(true);
-        this.animationGroup.speedRatio = 1;
-    }
-    moveBackward(speed){
-        this.collision.moveWithCollisions(this.collision.forward.scaleInPlace(-speed));
-    }*/
     rudderControl(rot){
-        this.rudder.rotate(BABYLON.Vector3.Left(),rot);
+        var rudderRotation = new BABYLON.Vector3().copyFrom(this.rudderZeroRotation);      
+        rudderRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
+        this.rudder.rotationQuaternion = rudderRotation.toQuaternion();
+    }
+    AileronControl(rot){
+        var leftAileronRotation = new BABYLON.Vector3().copyFrom(this.leftAileronZeroRotation);      
+        leftAileronRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
+        this.leftAileron.rotationQuaternion = leftAileronRotation.toQuaternion();
+        var rightAileronRotation = new BABYLON.Vector3().copyFrom(this.rightAileronZeroRotation);      
+        rightAileronRotation.addInPlace(new BABYLON.Vector3(-rot,0,0));
+        this.rightAileron.rotationQuaternion = rightAileronRotation.toQuaternion();
+    }
+    elevatorControl(rot){
+        var leftElevatorRotation = new BABYLON.Vector3().copyFrom(this.leftElevatorZeroRotation);      
+        leftElevatorRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
+        this.leftElevator.rotationQuaternion = leftElevatorRotation.toQuaternion();
+        var rightElevatorRotation = new BABYLON.Vector3().copyFrom(this.rightElevatorZeroRotation);      
+        rightElevatorRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
+        this.rightElevator.rotationQuaternion = rightElevatorRotation.toQuaternion();
     }
     applyLiftForce(){
         let lift = this.velocity.z * Math.abs(this.velocity.z) * 1.5;

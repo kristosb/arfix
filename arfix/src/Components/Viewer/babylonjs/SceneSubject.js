@@ -39,6 +39,16 @@ export default function scene(scene) {
         ground.material = groundMat;
         ground.receiveShadows = true;
 
+        //var texture = new BABYLON.CubeTexture(process.env.PUBLIC_URL+"/skybox", scene);
+        //scene.createDefaultSkybox(texture, true, 100);
+        var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:500.0}, scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(process.env.PUBLIC_URL+"/assets/textures/skybox", scene);
+        //skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", scene);
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skyboxMaterial.disableLighting = true;
+        skybox.material = skyboxMaterial;
 
         return ground;
     }

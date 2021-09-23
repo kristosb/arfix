@@ -92,7 +92,7 @@ export default function canvas(canvas)  {
         vehicleData = new AirplaneFromMesh(scene, task.loadedMeshes);//AirplaneChassis(scene);//
         vehicle = new VehicleAmmo(scene, vehicleData);
         //vehicle = new VehicleAmmo(scene, new AirplaneFromMesh(scene, task.loadedMeshes));
-        airplane = new Airplane(scene, vehicleData.chassisMesh, vehicleData.rudder, vehicleData.rotor);
+        airplane = new Airplane(scene, vehicleData.chassisMesh, vehicleData.controls);
         followCameraCreate(vehicleData.chassisMesh);
 	}
     assetsManager.onTaskSuccess = function (task){
@@ -218,33 +218,33 @@ export default function canvas(canvas)  {
                 airplane.roll = -1;
                 airplane.applyRollForce(-pow);
                 //console.log(tinyPlane.roll);
-                //tinyPlane.rudderControl(Math.PI/40);
+                airplane.AileronControl(-Math.PI/8);
             }
             if (inputMap["e"]) {
                 airplane.roll = 1;
                 //console.log(tinyPlane.roll);
                 airplane.applyRollForce(pow);
-                //tinyPlane.rudderControl(-Math.PI/40);
+                airplane.AileronControl(Math.PI/8);
             }
             if (inputMap["a"]) {
                 airplane.yaw = 1;
                 airplane.applyYawForce(pow);
-                console.log("a");
+                airplane.rudderControl(Math.PI/8);
             }
             if (inputMap["d"]) {
                 airplane.yaw = -1;
                 airplane.applyYawForce(-pow);
-                //console.log("d");
+                airplane.rudderControl(-Math.PI/8);
             }
             if (inputMap["w"]) {
                 airplane.pitch = 1;
-                airplane.applyPitchForce(pow);
-                //console.log("w");
+                airplane.applyPitchForce(pow);   
+                airplane.elevatorControl(-Math.PI/8);
             }
             if (inputMap["s"]) {
                 airplane.pitch = -1;
                 airplane.applyPitchForce(-pow);
-                //console.log("s");
+                airplane.elevatorControl(Math.PI/8);
             }
             if (inputMap["m"]) {
                 airplane.enginePower = airplane.enginePower + 0.05;//0.05

@@ -181,6 +181,7 @@ export class AirplaneFromMesh extends VehicleData{
      */
      constructor(scene, meshAll){
         super(scene);
+        console.log(meshAll);
         meshAll[0].translate(new BABYLON.Vector3.Up(),0.15,BABYLON.Space.WORLD);
         const massOffset = new BABYLON.Vector3(0, 0.1, 0.05);
         const mass = 50;
@@ -221,10 +222,19 @@ export class AirplaneFromMesh extends VehicleData{
         //add all meshes to chassis
         visualMeshes.forEach(vm=>{chassis.addChild(vm)});
 
-        //meshAll[0].removeChild(meshAll[5]);
-        //meshAll[0].removeChild(meshAll[6]);
-        //this.rudder = meshAll[6];
-        //this.rotor = meshAll[5];
+        /*this.rudder = meshAll[6];
+        this.rotor = meshAll[5];
+        this.leftAileron = meshAll[1];
+        this.rightAileron = meshAll[2];
+        this.leftElevator = meshAll[3];
+        this.rightElevator = meshAll[4];*/
+        this.controls = {   rotor: meshAll[5],
+                            rudder: meshAll[6],
+                            leftAileron: meshAll[1],
+                            rightAileron: meshAll[2],
+                            leftElevator: meshAll[3],
+                            rightElevator: meshAll[4]
+                        };
 
         this.collidersCreate(meshAll[0],chassis,
                             [meshAll[11],meshAll[12], meshAll[13], meshAll[14], meshAll[15], meshAll[16], meshAll[17]],
