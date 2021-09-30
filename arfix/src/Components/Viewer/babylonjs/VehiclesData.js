@@ -214,7 +214,7 @@ export class AirplaneFromMesh extends VehicleData{
         //chassis offset only visual because of the root mass offset
         //chassis is the volume that represents weight, its used for vehicle physisc but not collisions
         var chassis = makebox(scene, bodySize, new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.1, .1, .1), "chassis");
-        chassis.isVisible = true;       
+        chassis.isVisible = false;       
         
         // body visuals
         meshAll[0].removeChild(meshAll[7]);
@@ -222,12 +222,6 @@ export class AirplaneFromMesh extends VehicleData{
         //add all meshes to chassis
         visualMeshes.forEach(vm=>{chassis.addChild(vm)});
 
-        /*this.rudder = meshAll[6];
-        this.rotor = meshAll[5];
-        this.leftAileron = meshAll[1];
-        this.rightAileron = meshAll[2];
-        this.leftElevator = meshAll[3];
-        this.rightElevator = meshAll[4];*/
         this.controls = {   rotor: meshAll[5],
                             rudder: meshAll[6],
                             leftAileron: meshAll[1],

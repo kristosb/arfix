@@ -43,7 +43,6 @@ var vectorToWorldFrame = function(localVector, quaternion){
 };
 var pointToWorldFrame = function(localPoint,quaternion, position){
     var result = new BABYLON.Vector3();
-    //var rot = new BABYLON.Vector3();
     result = vmult(localPoint,quaternion);
     result = result.add(position);
     return result;
@@ -56,9 +55,6 @@ var applyLocalForce = function(localForce, localPoint, mesh){
     // Transform the force vector to world space
     worldForce = vectorToWorldFrame(localForce, mesh.rotationQuaternion);
     worldPoint = pointToWorldFrame(localPoint, mesh.rotationQuaternion, mesh.getAbsolutePosition());
-    //console.log(mesh.position);
-    //console.log(mesh.getAbsolutePosition());
-    //console.log(worldForce,worldPoint);
     mesh.physicsImpostor.applyForce(worldForce, worldPoint);
 };
 
@@ -92,11 +88,11 @@ export default class Airplane {
         this.rightAileron = controls.rightAileron;
         this.leftElevator = controls.leftElevator;
         this.rightElevator = controls.rightElevator;
-        //this.registerForces();
         this.addAnimations();
         this.animationGroup.play(true);
         this.animationGroup.speedRatio = 1;
         this.controlsInitialize();
+        this.registerForces();
     }
 
     set lift(val){
@@ -194,7 +190,7 @@ export default class Airplane {
         rudderRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
         this.rudder.rotationQuaternion = rudderRotation.toQuaternion();
     }
-    AileronControl(rot){
+    aileronControl(rot){
         var leftAileronRotation = new BABYLON.Vector3().copyFrom(this.leftAileronZeroRotation);      
         leftAileronRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
         this.leftAileron.rotationQuaternion = leftAileronRotation.toQuaternion();
@@ -226,23 +222,36 @@ export default class Airplane {
         applyLocalForce(new BABYLON.Vector3( 0, 0, 3000 * this.speedModifier * this.enginePower), new BABYLON.Vector3(0, 0, 2), this.collision);
     }
     applyRollForce(dir){
-        applyLocalForce(new BABYLON.Vector3(0, dir*5 * -this.velocity.z, 0), new BABYLON.Vector3(1, 0, 0), this.collision);
-        applyLocalForce(new BABYLON.Vector3(0, dir*5 * this.velocity.z, 0), new BABYLON.Vector3(-1, 0, 0), this.collision);
+        if (dir) {
+            applyLocalForce(new BABYLON.Vector3(0, dir*5 * -this.velocity.z, 0), new BABYLON.Vector3(1, 0, 0), this.collision);
+            applyLocalForce(new BABYLON.Vector3(0, dir*5 * this.velocity.z, 0), new BABYLON.Vector3(-1, 0, 0), this.collision);
+        }
     }
     applyYawForce(dir){
-        applyLocalForce(new BABYLON.Vector3( dir*5 * this.velocity.z, 0 , 0), new BABYLON.Vector3(0, 0, -1), this.collision);
+        if (dir) applyLocalForce(new BABYLON.Vector3( dir*5 * this.velocity.z, 0 , 0), new BABYLON.Vector3(0, 0, -1), this.collision);
     }
     applyPitchForce(dir){
-        applyLocalForce(new BABYLON.Vector3( 0, 5*dir*this.velocity.z , 0), new BABYLON.Vector3(0, 0, -1), this.collision);       
+        if (dir) applyLocalForce(new BABYLON.Vector3( 0, 5*dir*this.velocity.z , 0), new BABYLON.Vector3(0, 0, -1), this.collision);       
     }
-
+    resetControls(){
+        this.aileronControl(this.roll*Math.PI/8);
+        this.rudderControl(this.yaw*Math.PI/8);
+        this.elevatorControl(this.pitch*-Math.PI/8);
+        this.pitch = 0;
+        this.yaw = 0;
+        this.roll = 0;
+    }
     registerForces(){
         var that = this;
         //this.scene.registerBeforeRender(function () {
         this.scene.onBeforeRenderObservable.add(() => {
+            that.applyRollForce(that.roll);
+            that.applyYawForce(that.yaw);
+            that.applyPitchForce(that.pitch);
             that.applyDragForce();
             that.applyLiftForce(); 
             that.applyThrustForce();
+            that.resetControls();
         });
     }
 

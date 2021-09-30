@@ -208,53 +208,31 @@ export default function canvas(canvas)  {
         //scene.onBeforeRenderObservable.add(() => {
             if(vehicle!==null){
 
-            if (inputMap["z"]) {
-                airplane.lift += 0.1;
-            }
-            if (inputMap["x"]) {
-                airplane.lift -= 0.1;
-            }
             if (inputMap["q"]) {
                 airplane.roll = -1;
-                airplane.applyRollForce(-pow);
-                //console.log(tinyPlane.roll);
-                airplane.AileronControl(-Math.PI/8);
             }
             if (inputMap["e"]) {
                 airplane.roll = 1;
-                //console.log(tinyPlane.roll);
-                airplane.applyRollForce(pow);
-                airplane.AileronControl(Math.PI/8);
             }
             if (inputMap["a"]) {
                 airplane.yaw = 1;
-                airplane.applyYawForce(pow);
-                airplane.rudderControl(Math.PI/8);
             }
             if (inputMap["d"]) {
                 airplane.yaw = -1;
-                airplane.applyYawForce(-pow);
-                airplane.rudderControl(-Math.PI/8);
             }
             if (inputMap["w"]) {
                 airplane.pitch = 1;
-                airplane.applyPitchForce(pow);   
-                airplane.elevatorControl(-Math.PI/8);
             }
             if (inputMap["s"]) {
                 airplane.pitch = -1;
-                airplane.applyPitchForce(-pow);
-                airplane.elevatorControl(Math.PI/8);
             }
             if (inputMap["m"]) {
                 airplane.enginePower = airplane.enginePower + 0.05;//0.05
                 airplane.speedModifier = 0.12; //0.12
-                        
-                //console.log(tinyPlane.enginePower);
             }
-            airplane.applyDragForce();
-            airplane.applyLiftForce(); 
-            airplane.applyThrustForce();
+            if (inputMap["n"]) {
+                airplane.enginePower = airplane.enginePower - 0.05;//0.05
+            }
 
 
             
