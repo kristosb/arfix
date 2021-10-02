@@ -181,7 +181,7 @@ export class AirplaneFromMesh extends VehicleData{
      */
      constructor(scene, meshAll){
         super(scene);
-        console.log(meshAll);
+        //console.log(meshAll);
         meshAll[0].translate(new BABYLON.Vector3.Up(),0.15,BABYLON.Space.WORLD);
         const massOffset = new BABYLON.Vector3(0, 0.1, 0.05);
         const mass = 50;

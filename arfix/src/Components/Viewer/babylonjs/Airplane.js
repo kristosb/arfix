@@ -144,6 +144,9 @@ export default class Airplane {
 		//const currentSpeed = velocity.z;
         return 0;
     }
+    get rotation(){
+        return this.collision.rotationQuaternion.toEulerAngles();
+    }
     /*init () {
             this.registerForces();
     }*/

@@ -101,7 +101,7 @@ export default function canvas(canvas)  {
         //vehicle.chassisMesh.physicsImpostor.beforeStep = actions();
     }
     assetsManager.load();
-    //var hud = new DebugUI();
+    var hud = new DebugUI(canvas.width, canvas.height);
     
     showAxis(5,scene);
     registerActions(scene);
@@ -295,19 +295,20 @@ export default function canvas(canvas)  {
     //    if(vehicle!==null) vehicle.update();
     //}
 
-   /* function hudUpdate(){
+    function hudUpdate(){
         if(airplane!==null){ 
             hud.speed = airplane.velocity.z;
             hud.power = airplane.enginePower;
+            hud.heading = 180 +BABYLON.Tools.ToDegrees(airplane.rotation.y);
         }
-    }*/
+    }
 
     function animate(){
 
         //assetsManager.onFinish = function (tasks) {
             engine.runRenderLoop(function () {
                 //actions();
-                //hudUpdate();
+                hudUpdate();
                 scene.render();
                 //vehicleUpdate();
             });

@@ -1,32 +1,32 @@
 import * as BABYLON from 'babylonjs';
 //import { AdvancedDynamicTexture , TextBlock, StackPanel} from 'babylonjs-gui';
 import * as GUI from 'babylonjs-gui';
+import * as HUD from './HudControls';
 export default class debugUi {
-    constructor(){
+    constructor(width, height){
+        var guiPosition = {width:width, height:height -200};
         var advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        var stackPanel = new GUI.StackPanel();
-        stackPanel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;   
-        stackPanel.isVertical = true;
-        advancedTexture.addControl(stackPanel);     
-
-        this.text1 = new GUI.TextBlock();
-        this.text1.text = "hello";
-        this.text1.color = "green";
-        this.text1.fontSize = 16;
-        this.text1.height = "30px";
-        stackPanel.addControl(this.text1);  
-        this.text2 = new GUI.TextBlock();
-        this.text2.text = "hello";
-        this.text2.color = "green";
-        this.text2.fontSize = 16;
-        this.text2.height = "30px";
-        stackPanel.addControl(this.text2); 
+        
+        var cross = new HUD.crosshair(guiPosition.width,guiPosition.height);
+        cross.draw();
+        cross.lines.forEach(x=> advancedTexture.addControl(x));
+        this.speedInfo = new HUD.hudSimpleText(-100, -150);
+        advancedTexture.addControl(this.speedInfo.element);
+        this.powerInfo = new HUD.hudSimpleText(-88, -150);
+        advancedTexture.addControl(this.powerInfo.element);
+        this.compass = new HUD.compass(guiPosition.width,guiPosition.height);
+        this.compass.draw();
+        this.compass.elements.forEach(x=> advancedTexture.addControl(x));
     }
     set speed(sp){
-        this.text1.text = sp.toString();
+        this.speedInfo.element.text = "V= " +sp.toFixed(2).toString();
     }
-    set power(x){
-        this.text2.text = x.toString();
+    set power(pwr){
+        this.powerInfo.element.text = "P= " +pwr.toFixed(2).toString();
+    }
+    set heading(cmp){
+        this.compass.angle = cmp;
+        this.compass.draw();
     }
 }
 
