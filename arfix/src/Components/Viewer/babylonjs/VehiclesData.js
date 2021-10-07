@@ -228,8 +228,8 @@ export class AirplaneFromMesh extends VehicleData{
                             rightAileron: meshAll[2],
                             leftElevator: meshAll[3],
                             rightElevator: meshAll[4]
-                        };
-
+                        };   
+                  
         this.collidersCreate(meshAll[0],chassis,
                             [meshAll[11],meshAll[12], meshAll[13], meshAll[14], meshAll[15], meshAll[16], meshAll[17]],
                             BABYLON.PhysicsImpostor.BoxImpostor,
@@ -245,7 +245,6 @@ export class AirplaneFromMesh extends VehicleData{
         this.steeringWheelsIndex = [0];
         this.brakeWheelsIndex = [1,2];
         this.chassisMesh = chassis;
-
         meshAll[0].dispose();       //not needed anymore since we had do assign a new mesh root for raycast vehicle
     }
     collidersCreate(oldRoot, newRoot, meshes, impostorType, isVisible){

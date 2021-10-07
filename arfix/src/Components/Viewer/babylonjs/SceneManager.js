@@ -20,9 +20,11 @@ import Airplane from './Airplane';
 import VehicleAmmo from './VehicleAmmo';
 import { AirplaneChassis, AirplaneFromMesh} from './VehiclesData.js';
 import DebugUI from './DebugUI.js';
+import HudPanel from './Hud';
+import {Clock} from './Clock';
 //import * as BABYLON from 'babylonjs';
 //import { default as Ammo } from 'ammo.js/builds/ammo';
-var showAxis = function (size, scene) {
+/*var showAxis = function (size, scene) {
     var makeTextPlane = function (text, color, size) {
         var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
         dynamicTexture.hasAlpha = true;
@@ -56,7 +58,7 @@ var showAxis = function (size, scene) {
     axisZ.color = new BABYLON.Color3(0, 0, 1);
     var zChar = makeTextPlane("Z", "blue", size / 10);
     zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size);
-};
+};*/
 
 
 export default function canvas(canvas)  {
@@ -71,21 +73,22 @@ export default function canvas(canvas)  {
         x: 0,
         y: 0
     }
-
+    const clock = new Clock();
     const engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
     engine.loadingUIText = "Loading world and airplane...";
     engine.loadingUIBackgroundColor = "Purple";
 
     const scene = buildScene();
     const physics = buildGravity();
-    const camera = buildCamera(screenDimensions);
-    camera.position = new BABYLON.Vector3(-4,0.1,-6);
+    const camera = followCameraCreate();//buildCamera(screenDimensions);
+    //camera.position = new BABYLON.Vector3(-4,0.1,-6);
     var ground = new SceneSubject();
     var inputMap = {};
 
     var vehicleData = null;
     var vehicle = null;
     var airplane = null;
+    var hud = null;
     var assetsManager = new BABYLON.AssetsManager(scene);
     var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane.glb");
     meshAirplaneTask.onSuccess = function (task) {
@@ -93,18 +96,29 @@ export default function canvas(canvas)  {
         vehicle = new VehicleAmmo(scene, vehicleData);
         //vehicle = new VehicleAmmo(scene, new AirplaneFromMesh(scene, task.loadedMeshes));
         airplane = new Airplane(scene, vehicleData.chassisMesh, vehicleData.controls);
-        followCameraCreate(vehicleData.chassisMesh);
+        //camera = followCameraCreate(vehicleData.chassisMesh);
+        //firstPersonCamera(vehicleData.chassisMesh);
+        camera.lockedTarget =  vehicleData.chassisMesh;
+        hud = new HudPanel(scene, canvas);
+        hud.linkWithMesh(vehicleData.chassisMesh);
 	}
     assetsManager.onTaskSuccess = function (task){
         console.log("manager finished");
         //vehicle.chassisMesh.physicsImpostor.registerBeforePhysicsStep(actions());
         //vehicle.chassisMesh.physicsImpostor.beforeStep = actions();
+        //hud = new DebugUI(canvas.width, canvas.height, scene);
+        //hud.linkWithMesh(vehicleData.chassisMesh);
+
+        //hud.lockToCamera(camera);
+        //console.log("mesh",hud.hudMesh);
+        //camera.lockedTarget =  hud.hudMesh;
+        //hud.linkWithCamera(camera);
+        registerActions(scene);
     }
     assetsManager.load();
-    var hud = new DebugUI(canvas.width, canvas.height);
-    
-    showAxis(5,scene);
-    registerActions(scene);
+
+    //showAxis(5,scene);
+    //registerActions(scene);
 
 
     function buildScene() {
@@ -153,19 +167,24 @@ export default function canvas(canvas)  {
     }
     function followCameraCreate(mesh){
         var followCamera = new BABYLON.FollowCamera("followcamera", new BABYLON.Vector3(0,0,-100), scene);
-        followCamera.heightOffset = 1.5;
+        followCamera.heightOffset = 1;
         //followCamera.rotationOffset = 180;
-        followCamera.cameraAcceleration = 0.04   ;//0.06
-    
+        followCamera.cameraAcceleration = 0.05   ;//0.06
+        
     
         followCamera.maxCameraSpeed = 1800;//1800
         followCamera.inertia = 20.0;//20
         followCamera.radius = -5;
-        followCamera.lockedTarget = mesh;
-        
+        //followCamera.lockedTarget = mesh;
         followCamera.attachControl(canvas, false);
         
         scene.activeCamera = followCamera;
+        return followCamera;
+    }
+    function firstPersonCamera(mesh){
+        var targetCam = new BABYLON.TargetCamera("playerCamera", new BABYLON.Vector3(0, 2, -5), scene);
+        targetCam.parent = mesh;
+        scene.activeCamera = targetCam;
     }
 
     function createSceneSubjects(scene) {
@@ -297,9 +316,15 @@ export default function canvas(canvas)  {
 
     function hudUpdate(){
         if(airplane!==null){ 
-            hud.speed = airplane.velocity.z;
-            hud.power = airplane.enginePower;
-            hud.heading = 180 +BABYLON.Tools.ToDegrees(airplane.rotation.y);
+            const elapsedTime = clock.getElapsedTime();
+            hud.getRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(airplane.rotation.y),
+                                                -BABYLON.Tools.ToDegrees(airplane.rotation.x),
+                                                BABYLON.Tools.ToDegrees(airplane.rotation.z)));
+            hud.update(elapsedTime);
+            //hud.speed = airplane.velocity.z;
+            //hud.power = airplane.enginePower;
+            //hud.heading = 180 +BABYLON.Tools.ToDegrees(airplane.rotation.y);
+            //hud.setPitchAndRoll( -BABYLON.Tools.ToDegrees(airplane.rotation.x),BABYLON.Tools.ToDegrees(airplane.rotation.z));
         }
     }
 
@@ -312,7 +337,7 @@ export default function canvas(canvas)  {
                 scene.render();
                 //vehicleUpdate();
             });
-
+        //}
     }
 
     function onMouseMove(x, y) {
