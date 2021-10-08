@@ -52,6 +52,26 @@ export default function scene(scene) {
 
         return ground;
     }
+    function makeClouds(){
+      var spriteManagerClouds = new BABYLON.SpriteManager("cloudsManager", "http://www.babylonjs.com/Scenes/Clouds/cloud.png", 1000, 256, scene);
+      for (var i = 0; i < 200; i++) {
+            var clouds = new BABYLON.Sprite("clouds", spriteManagerClouds);
+            clouds.position.x = Math.random() * 500 - 100;
+        clouds.position.y = Math.random() * 10 + 60;
+            clouds.position.z = Math.random() * 500 - 200; 
+        clouds.size = Math.random() * 50;
+            if (Math.round(Math.random() * 5) === 0) {
+                clouds.angle = Math.PI * 90 / 180;            
+            }
+        if (Math.round(Math.random() * 2) === 0) {
+          clouds.invertU = -1;
+        }
+        if (Math.round(Math.random() * 4) === 0) {
+          clouds.invertV = -1;
+        }
+        }
+    return spriteManagerClouds;
+    }
     function makeBox(){
       // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
       //const ground = BABYLON.Mesh.CreateGround('ground1', 10, 10, 2, scene, false);
@@ -118,7 +138,9 @@ export default function scene(scene) {
     const cubes = [
       //makeInstance(1, 0x44aa88,  0, 0, -0.5),
         makeGround(),
-        makeBox()
+        makeBox(),
+        makeClouds()
+
         //makeWorld()
         //new Airplane(scene)
       ];

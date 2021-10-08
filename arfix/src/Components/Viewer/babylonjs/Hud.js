@@ -43,6 +43,7 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
     var angles = new BABYLON.Vector3(0,0,0);
     var speed = 0;
     var altitude = 0;
+    var power = 0;
     //console.log('win inner height'+window.innerHeight);
     var style = `rgba(
         ${0xa3},
@@ -66,6 +67,7 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
         compass: new HUD2D.compass(ctx,window.drawCanvas.width,window.drawCanvas.height,200,2),
         pitchLader: new HUD2D.pitchLader(ctx,window.drawCanvas.width,window.drawCanvas.height),
         speed: new HUD2D.hudSimpleText(ctx, 0, window.drawCanvas.height-20,90),
+        power: new HUD2D.hudSimpleText(ctx, 0, window.drawCanvas.height-90,75),
         altitude: new HUD2D.hudSimpleText(ctx, window.drawCanvas.width-230, window.drawCanvas.height-20,90)
         //msgs: new HUD2D.hudWrappedText(hudBitmap,10,60,12)
     };
@@ -168,6 +170,7 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
         //hudElements.pitchLader.angle = flightData.pitch;
         hudElements.speed.text = speed;
         hudElements.altitude.text = altitude;
+        hudElements.power.text = power;
         hudElements.compass.angle = angles.x;
         hudElements.pitchLader.angle = angles.y;
         hudElements.pitchLader.rot = angles.z;
@@ -214,6 +217,10 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
     function setAltitude(a){
         altitude = a.toFixed(1);
     }
+    function setPower(p){
+        if(p>0.99) p=0.99;
+        power = (p*100).toFixed(0);
+    }
 	function update(time) {
         //then = now;
         now = time;
@@ -232,6 +239,7 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
         lockToCamera,
         setRotation,
         setSpeed,
-        setAltitude
+        setAltitude,
+        setPower
     }
 }

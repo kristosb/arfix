@@ -321,6 +321,7 @@ export default function canvas(canvas)  {
                                                 -BABYLON.Tools.ToDegrees(airplane.rotation.x),
                                                 BABYLON.Tools.ToDegrees(airplane.rotation.z)));
             hud.setSpeed(airplane.velocity.z);
+            hud.setPower(airplane.enginePower);
             hud.setAltitude(airplane.collision.position.y);
             hud.update(elapsedTime);
             //hud.speed = airplane.velocity.z;
