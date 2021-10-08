@@ -41,6 +41,8 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
     var then = 0;
     var interval=0.05;
     var angles = new BABYLON.Vector3(0,0,0);
+    var speed = 0;
+    var altitude = 0;
     //console.log('win inner height'+window.innerHeight);
     var style = `rgba(
         ${0xa3},
@@ -63,6 +65,8 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
         //horizon: new HUD2D.horizon(ctx,window.drawCanvas.width,window.drawCanvas.height),
         compass: new HUD2D.compass(ctx,window.drawCanvas.width,window.drawCanvas.height,200,2),
         pitchLader: new HUD2D.pitchLader(ctx,window.drawCanvas.width,window.drawCanvas.height),
+        speed: new HUD2D.hudSimpleText(ctx, 0, window.drawCanvas.height-20,90),
+        altitude: new HUD2D.hudSimpleText(ctx, window.drawCanvas.width-230, window.drawCanvas.height-20,90)
         //msgs: new HUD2D.hudWrappedText(hudBitmap,10,60,12)
     };
     //hudElements.compass.tickSpace = 100;
@@ -77,6 +81,8 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
     hudElements.pitchLader.fontSize = 90;
     hudElements.pitchLader.range = 2;
 
+   
+
     Object.values(hudElements).forEach(val => {
         //val.fontSize = 128;
         //val.draw(); 
@@ -85,11 +91,13 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
         scene
     });
     var material = new BABYLON.StandardMaterial("groundMat", scene);
+    material.emissiveTexture = texture;
+    material.disableLighting = true;
     material.diffuseTexture = texture;
     material.diffuseTexture.hasAlpha = true;
     material.backFaceCulling = false;
     //material.disableLighting = true;
-    var hudMesh = BABYLON.MeshBuilder.CreatePlane("hudPlane", {size:2});
+    var hudMesh = BABYLON.MeshBuilder.CreatePlane("hudPlane", {size:1.6});
     hudMesh.material = material;
     //hudMesh.scaling.x = 0.1;
     //hudMesh.scaling.y = 0.1;
@@ -158,7 +166,8 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
         //hudElements.compass.angle = flightData.yaw;
         //hudElements.pitchLader.rot = flightData.roll;
         //hudElements.pitchLader.angle = flightData.pitch;
-        
+        hudElements.speed.text = speed;
+        hudElements.altitude.text = altitude;
         hudElements.compass.angle = angles.x;
         hudElements.pitchLader.angle = angles.y;
         hudElements.pitchLader.rot = angles.z;
@@ -196,9 +205,14 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
         //drawing.translate(screenDimensions.width/2,0);
         //drawing.scale(-1, 1);
     }
-    function getRotation(eulerAngles){
+    function setRotation(eulerAngles){
         angles.copyFrom(eulerAngles);
-        //console.log(angles.x);
+    }
+    function setSpeed(s){
+        speed = (s*10).toFixed(1);
+    }
+    function setAltitude(a){
+        altitude = a.toFixed(1);
     }
 	function update(time) {
         //then = now;
@@ -216,6 +230,8 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
         linkWithMesh,
         linkWithCamera,
         lockToCamera,
-        getRotation
+        setRotation,
+        setSpeed,
+        setAltitude
     }
 }

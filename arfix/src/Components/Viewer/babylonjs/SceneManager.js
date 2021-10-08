@@ -317,9 +317,11 @@ export default function canvas(canvas)  {
     function hudUpdate(){
         if(airplane!==null){ 
             const elapsedTime = clock.getElapsedTime();
-            hud.getRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(airplane.rotation.y),
+            hud.setRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(airplane.rotation.y),
                                                 -BABYLON.Tools.ToDegrees(airplane.rotation.x),
                                                 BABYLON.Tools.ToDegrees(airplane.rotation.z)));
+            hud.setSpeed(airplane.velocity.z);
+            hud.setAltitude(airplane.collision.position.y);
             hud.update(elapsedTime);
             //hud.speed = airplane.velocity.z;
             //hud.power = airplane.enginePower;
