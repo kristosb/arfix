@@ -260,6 +260,96 @@ export class AirplaneFromMesh extends VehicleData{
 
 }
 
+export class AirplaneWW2 extends VehicleData{
+    /**    
+     * Projects a point to a plane along a ray starting from the camera origin and directed towards the point. 
+     * @param {BABYLON.Scene} scene      
+     * @param {[BABYLON.Mesh]} meshAll
+     */
+     constructor(scene, meshAll){
+        super(scene);
+        //console.log(meshAll);
+        meshAll[0].translate(new BABYLON.Vector3.Up(),0.15,BABYLON.Space.WORLD);
+        const massOffset = new BABYLON.Vector3(0, 0.2, 0.65);
+        const mass = 50;
+        const isColiderVisible = false;
+        var settings = {
+            suspensionStiffness: 47,//27
+            suspensionDamping: 0.3,//03
+            suspensionCompression: 4.4,//4.4
+            suspensionRestLength: 0.3,//0.3
+            rollInfluence: 0.01, //0.01
+        }
+        this.wheelsMesh = [
+            meshAll[18], meshAll[19], meshAll[20]
+        ];  
+        this.wheelsMesh .forEach(m=>meshAll[0].removeChild(m));
+        meshAll[0].translate(new BABYLON.Vector3.Up(),0.8,BABYLON.Space.WORLD);
+
+        const radius = 0.225/2;//0.225/2;
+        // (widht, heigth, length) of a car
+        this.wheels =
+            [
+                {pos: this.wheelsMesh[0].position, radius: radius, isFront: true, params: settings},
+                {pos: this.wheelsMesh[1].position, radius: radius, isFront: true, params: settings},
+                {pos: this.wheelsMesh[2].position, radius: radius, isFront: false, params: settings},
+            ];
+        this.wheels.forEach(x=>x.pos.addInPlace(massOffset));
+
+        const bodySize = new BABYLON.Vector3(0.3, 0.3, 0.3);
+
+        //chassis offset only visual because of the root mass offset
+        //chassis is the volume that represents weight, its used for vehicle physisc but not collisions
+        var chassis = makebox(scene, bodySize, new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.1, .1, .1), "chassis");
+        chassis.isVisible = true;       
+        
+        // body visuals
+        meshAll[0].removeChild(meshAll[11]);
+        var visualMeshes = [meshAll[11]];//[rootVisualMesh];
+        //add all meshes to chassis
+        visualMeshes.forEach(vm=>{chassis.addChild(vm)});
+
+        this.controls = {   rotor: meshAll[17],
+                            rudder: meshAll[16],
+                            leftAileron: meshAll[12],
+                            rightAileron: meshAll[13],
+                            leftElevator: meshAll[15],
+                            rightElevator: meshAll[14]
+                        };   
+                  
+        this.collidersCreate(meshAll[0],chassis,
+                            [meshAll[1],meshAll[2], meshAll[3], meshAll[4], meshAll[5]],
+                            BABYLON.PhysicsImpostor.BoxImpostor,
+                            isColiderVisible);
+        this.collidersCreate(meshAll[0],chassis,
+                            [meshAll[6], meshAll[7], meshAll[8], meshAll[9], meshAll[10]],
+                            BABYLON.PhysicsImpostor.CapsuleImpostor,
+                            isColiderVisible);
+        createPhysicsImpostor(this.scene, chassis, BABYLON.PhysicsImpostor.NoImpostor, { mass: mass, friction: 1,restitution:0.1}, true);
+
+        chassis.physicsImpostor.physicsBody.setDamping(0.01, 0.6);
+        this.powerWheelsIndex = [0,1];
+        this.steeringWheelsIndex = [2];
+        this.brakeWheelsIndex = [0,1];
+        this.chassisMesh = chassis;
+        meshAll[0].dispose();       //not needed anymore since we had do assign a new mesh root for raycast vehicle
+    }
+    collidersCreate(oldRoot, newRoot, meshes, impostorType, isVisible){
+        var coliderMeshesBox = meshes;
+        coliderMeshesBox.forEach(m=>oldRoot.removeChild(m));
+        coliderMeshesBox.forEach(cm=>{
+            newRoot.addChild(cm);
+            cm.isVisible = isVisible;
+        });
+        coliderMeshesBox.forEach(cm=>{createPhysicsImpostor(this.scene, cm, impostorType, { mass: 0, friction: 1,restitution: 0.1}, true)});    //    restitution:0.1   
+    }
+    
+
+}
+
+
+
+
 function createPhysicsImpostor(scene, entity, impostor, options, reparent) {
     if (entity == null) return;
     entity.checkCollisions = false;
