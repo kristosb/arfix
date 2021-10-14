@@ -284,7 +284,7 @@ export class AirplaneWW2 extends VehicleData{
             meshAll[18], meshAll[19], meshAll[20]
         ];  
         this.wheelsMesh .forEach(m=>meshAll[0].removeChild(m));
-        meshAll[0].translate(new BABYLON.Vector3.Up(),0.8,BABYLON.Space.WORLD);
+        meshAll[0].translate(new BABYLON.Vector3.Up(),0.75,BABYLON.Space.WORLD);
 
         const radius = 0.225/2;//0.225/2;
         // (widht, heigth, length) of a car
@@ -292,7 +292,7 @@ export class AirplaneWW2 extends VehicleData{
             [
                 {pos: this.wheelsMesh[0].position, radius: radius, isFront: true, params: settings},
                 {pos: this.wheelsMesh[1].position, radius: radius, isFront: true, params: settings},
-                {pos: this.wheelsMesh[2].position, radius: radius, isFront: false, params: settings},
+                {pos: this.wheelsMesh[2].position, radius: radius/2, isFront: false, params: settings},
             ];
         this.wheels.forEach(x=>x.pos.addInPlace(massOffset));
 
@@ -301,7 +301,7 @@ export class AirplaneWW2 extends VehicleData{
         //chassis offset only visual because of the root mass offset
         //chassis is the volume that represents weight, its used for vehicle physisc but not collisions
         var chassis = makebox(scene, bodySize, new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.1, .1, .1), "chassis");
-        chassis.isVisible = true;       
+        chassis.isVisible = false;       
         
         // body visuals
         meshAll[0].removeChild(meshAll[11]);
@@ -316,7 +316,11 @@ export class AirplaneWW2 extends VehicleData{
                             leftElevator: meshAll[15],
                             rightElevator: meshAll[14]
                         };   
-                  
+        Object.values( this.controls).forEach(m=>{
+            meshAll[0].removeChild(m);
+            chassis.addChild(m);
+        } );  
+        
         this.collidersCreate(meshAll[0],chassis,
                             [meshAll[1],meshAll[2], meshAll[3], meshAll[4], meshAll[5]],
                             BABYLON.PhysicsImpostor.BoxImpostor,

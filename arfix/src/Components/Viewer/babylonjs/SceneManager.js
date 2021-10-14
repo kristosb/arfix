@@ -58,6 +58,7 @@ export default function canvas(canvas)  {
     meshAirplaneTask.onSuccess = function (task) {
         //vehicleData = new AirplaneFromMesh(scene, task.loadedMeshes);//AirplaneChassis(scene);//
         vehicleData = new AirplaneWW2(scene, task.loadedMeshes);
+        task.loadedMeshes.forEach((x,i)=>console.log(i,x.id));
         vehicle = new VehicleAmmo(scene, vehicleData);
         //vehicle = new VehicleAmmo(scene, new AirplaneFromMesh(scene, task.loadedMeshes));
         airplane = new Airplane(scene, vehicleData.chassisMesh, vehicleData.controls);
