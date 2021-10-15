@@ -227,42 +227,47 @@ export default function canvas(canvas)  {
 
             
             if (inputMap["t"]) {
-                vehicle.forward(40);
+                vehicle.accelerate(40);
+                //vehicle.forward(40);
                 //console.log(inputMap["t"]);
-            }else if(inputMap["t"] !== null){
+            }/*else if(inputMap["t"] !== null){
                 vehicle.forward(0);
                 //console.log(inputMap["t"]);
                 inputMap["t"] = null;
-            }
+            }*/
 
             if (inputMap["g"]) {
-                vehicle.backward(20);
-            }else if (inputMap["g"] !== null){
+                vehicle.accelerate(-20);
+                //vehicle.backward(20);
+            }/*else if (inputMap["g"] !== null){
                 vehicle.backward(0);
                 inputMap["g"] = null;
-            }
+            }*/
 
 
             if (inputMap["f"]) {
-                vehicle.right(0.5);
-            }else if (inputMap["f"] !== null ){
+                vehicle.directionChange(0.5);
+                //vehicle.right(0.5);
+            }/*else if (inputMap["f"] !== null ){
                 vehicle.left(0);
                 inputMap["f"] = null;
-            }
+            }*/
 
             if (inputMap["h"]) {
-                vehicle.left(0.5);
-            }else if(inputMap["h"] !== null){
+                vehicle.directionChange(-0.5);
+                //vehicle.left(0.5);
+            }/*else if(inputMap["h"] !== null){
                 vehicle.left(0);
                 inputMap["h"] = null;
-            }
+            }*/
             
             if (inputMap["b"]) {
-                vehicle.brake(10);
-            }else if( inputMap["b"] !== null){
+                vehicle.brakeApply(10);
+                //vehicle.brake(10);
+            }/*else if( inputMap["b"] !== null){
                 vehicle.unbrake();
                 inputMap["b"] = null;
-            }
+            }*/
           }
           if (inputMap["p"]) {
             showImpostors(scene);

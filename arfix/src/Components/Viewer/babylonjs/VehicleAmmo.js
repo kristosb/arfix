@@ -20,7 +20,12 @@ export default class VehicleAmmo{
         this.scene = scene;
         this.vehicle = null;
         this.carData = carData;
+        this.acceleration = 0;
+        this.direction = 0;
+        this.breakingForce = 0;
         this.createVehicle( new BABYLON.Vector3(0,1,0),new BABYLON.Vector3(0,0,0).toQuaternion());
+        //this.rearFrontSteeringReverse();
+        //this.registerForces();
     }
     createVehicle( pos,quat){
         var physicsWorld = this.scene.getPhysicsEngine().getPhysicsPlugin().world;
@@ -59,6 +64,7 @@ export default class VehicleAmmo{
             wheelInfo.set_m_rollInfluence(wheel.params.rollInfluence);
             //that.wheelMeshes[index] = that.createWheelMesh(radius, 0.25);
         });
+        this.rearFrontSteeringReverse();
         // if updated in the main animation loop artifacts of wheels not catching up at high speed visible
         this.scene.registerBeforeRender(function () {
             var tm, p, q, i;
@@ -71,43 +77,46 @@ export default class VehicleAmmo{
 				that.carData.wheelsMesh[i].position.set(p.x(), p.y(), p.z());
 				that.carData.wheelsMesh[i].rotationQuaternion.set(q.x(), q.y(), q.z(), q.w());
 			}
+            that.registerForces();
         });
-        	      
+
+    }
+    rearFrontSteeringReverse(){
+        this.reverseSteeringSign = -1;
+        this.carData.steeringWheelsIndex.forEach( (sw,i)=>{
+            if(!this.carData.wheels[sw].isFront) this.reverseSteeringSign = 1;
+        });
+        console.log(this.reverseSteeringSign);
     }
  
-   /* update(){
-        var that = this;
-        var tm, p, q, i;
-        var n = that.vehicle.getNumWheels();
-        for (i = 0; i < n; i++) {
-            that.vehicle.updateWheelTransform(i, true);
-            tm = that.vehicle.getWheelTransformWS(i);
-            p = tm.getOrigin();
-            q = tm.getRotation();
-            that.carData.wheelsMesh[i].position.set(p.x(), p.y(), p.z());
-            that.carData.wheelsMesh[i].rotationQuaternion.set(q.x(), q.y(), q.z(), q.w());
-        }
+    accelerate(force){
+        if(this.accelerationIdle) this.carData.powerWheelsIndex.forEach(x=> this.vehicle.applyEngineForce(force, x));
     }
-*/
-    forward(force){
-        this.carData.powerWheelsIndex.forEach(x=> this.vehicle.applyEngineForce(force, x));
+    directionChange(force){
+        if(this.directionIdle) this.carData.steeringWheelsIndex.forEach(x => this.vehicle.setSteeringValue(this.reverseSteeringSign*force, x));
     }
-    backward(force){
-        this.carData.powerWheelsIndex.forEach(x=> this.vehicle.applyEngineForce(-force, x));
+    brakeApply(force){
+        if(this.breakIdle) this.carData.brakeWheelsIndex.forEach(x => this.vehicle.setBrake(force, x));
     }
-    right(force){
-        this.carData.steeringWheelsIndex.forEach(x => this.vehicle.setSteeringValue(-force, x));
+    /**    
+     * if the previous acceleration, direction or braekForce was zero then go to idle for that force
+     */
+    resetControls(){
+        this.accelerationIdle = this.breakingForce ? false : true;
+        this.directionIdle = this.direction ? false : true;
+        this.breakIdle = this.breakingForce ? false : true;
+        this.acceleration = 0;
+        this.direction = 0;
+        this.breakingForce = 0;
     }
-    left(force){
-        this.carData.steeringWheelsIndex.forEach(x => this.vehicle.setSteeringValue(force, x));
+    registerForces(){
+        //var that = this;
+        //this.scene.onBeforeRenderObservable.add(() => {
+            this.accelerate(this.acceleration);
+            this.directionChange(this.direction);
+            this.brakeApply(this.breakingForce);
+            this.resetControls();
+        //});
     }
-    brake(force){
-        this.carData.brakeWheelsIndex.forEach(x => this.vehicle.setBrake(force, x));
-    }
-    unbrake(){
-        this.carData.brakeWheelsIndex.forEach(x => this.vehicle.setBrake(0, x));
-    }
-    /*get impostor(){
-        return this.carData.chassisMesh.physicsImpostor;
-    }*/
+
 }
