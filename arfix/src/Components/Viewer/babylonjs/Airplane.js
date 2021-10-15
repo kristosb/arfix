@@ -57,14 +57,13 @@ var applyLocalForce = function(localForce, localPoint, mesh){
     worldPoint = pointToWorldFrame(localPoint, mesh.rotationQuaternion, mesh.getAbsolutePosition());
     mesh.physicsImpostor.applyForce(worldForce, worldPoint);
 };
-
 export default class Airplane {
     /**    
      * Projects a point to a plane along a ray starting from the camera origin and directed towards the point. 
      * @param {BABYLON.Scene} scene      
      * @param {BABYLON.Mesh} chassis
-     *  @param {BABYLON.Mesh} rudder
-     *  @param {BABYLON.Mesh} rotor
+     *  @param {{ rotor: BABYLON.Mesh,rudder: BABYLON.Mesh,leftAileron: BABYLON.Mesh,rightAileron: BABYLON.Mesh,leftElevator: BABYLON.Mesh,rightElevator: BABYLON.Mesh} }controls
+     *  
      */
     constructor(scene, chassis, controls){
         this.scene = scene;
@@ -93,6 +92,14 @@ export default class Airplane {
         this.animationGroup.speedRatio = 1;
         this.controlsInitialize();
         this.registerForces();
+        //this.leftAileron.rotate(BABYLON.Vector3.Left(), 15);
+        //console.log(this.leftAileron.rotationQuaternion.toEulerAngles());
+        //this.leftAileron.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(0, 0, 15);   
+        //this.leftAileron.rotationQuaternion = new BABYLON.Quaternion.FromEulerAngles(0,0,0);
+        //var left = new BABYLON.Vector3().copyFrom(this.leftAileronZeroRotation);   
+        //this.leftAileron.rotationQuaternion =  BABYLON.Quaternion.RotationYawPitchRoll(left.y, left.x, left.z+15);
+        //console.log(this.leftAileron.rotationQuaternion.toEulerAngles());
+        //this.leftAileron.rotationQuaternion.add(BABYLON.Quaternion.RotationYawPitchRoll(0,0,15));
     }
 
     set lift(val){
@@ -152,8 +159,9 @@ export default class Airplane {
     }*/
 
     rotorSpin(rotor){
-        rotor.rotation = new BABYLON.Vector3(0, Math.PI/2, 0);
-        const animWheel = new BABYLON.Animation("wheelAnimation", "rotation.x", 15, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        rotor.rotation = new BABYLON.Vector3(0,  0, Math.PI/2,);
+        //rotor.rotation = new BABYLON.Vector3(0, Math.PI/2, 0);
+        const animWheel = new BABYLON.Animation("wheelAnimation", "rotation.z", 15, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         this.animationGroup = new BABYLON.AnimationGroup("airplane");
         const wheelKeys = []; 
         var enginePower = 1;
@@ -178,36 +186,40 @@ export default class Airplane {
         this.rotorSpin(this.rotor);
     }
     controlsInitialize(){
-        this.rudderZeroRotation = this.rudder.rotationQuaternion.toEulerAngles();
-        this.leftAileronZeroRotation = this.leftAileron.rotationQuaternion.toEulerAngles();
-        this.rightAileronZeroRotation = this.rightAileron.rotationQuaternion.toEulerAngles();
-        this.leftElevatorZeroRotation = this.leftElevator.rotationQuaternion.toEulerAngles();
-        this.rightElevatorZeroRotation = this.rightElevator.rotationQuaternion.toEulerAngles();
+        this.rudderZeroRotation = new BABYLON.Quaternion();
+        this.leftAileronZeroRotation = new BABYLON.Quaternion();
+        this.rightAileronZeroRotation = new BABYLON.Quaternion();
+        this.leftElevatorZeroRotation = new BABYLON.Quaternion();
+        this.rightElevatorZeroRotation = new BABYLON.Quaternion();
+
+        this.rudderZeroRotation.copyFrom(this.rudder.rotationQuaternion);
+        this.leftAileronZeroRotation.copyFrom(this.leftAileron.rotationQuaternion);
+        this.rightAileronZeroRotation.copyFrom(this.rightAileron.rotationQuaternion);
+        this.leftElevatorZeroRotation.copyFrom(this.leftElevator.rotationQuaternion);
+        this.rightElevatorZeroRotation.copyFrom(this.rightElevator.rotationQuaternion);
+        
     }
     meshRootPosition(x,y,z){       
         this.collision.setAbsolutePosition(x,y,z);
         
     }
     rudderControl(rot){
-        var rudderRotation = new BABYLON.Vector3().copyFrom(this.rudderZeroRotation);      
-        rudderRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
-        this.rudder.rotationQuaternion = rudderRotation.toQuaternion();
+        this.rudder.rotationQuaternion.copyFrom(this.rudderZeroRotation);
+        this.rudder.rotate(BABYLON.Vector3.Up(), rot);
     }
+
     aileronControl(rot){
-        var leftAileronRotation = new BABYLON.Vector3().copyFrom(this.leftAileronZeroRotation);      
-        leftAileronRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
-        this.leftAileron.rotationQuaternion = leftAileronRotation.toQuaternion();
-        var rightAileronRotation = new BABYLON.Vector3().copyFrom(this.rightAileronZeroRotation);      
-        rightAileronRotation.addInPlace(new BABYLON.Vector3(-rot,0,0));
-        this.rightAileron.rotationQuaternion = rightAileronRotation.toQuaternion();
+        this.leftAileron.rotationQuaternion.copyFrom(this.leftAileronZeroRotation);
+        this.leftAileron.rotate(BABYLON.Vector3.Left(), rot);
+        this.rightAileron.rotationQuaternion.copyFrom(this.rightAileronZeroRotation);
+        this.rightAileron.rotate(BABYLON.Vector3.Left(), -rot);
     }
     elevatorControl(rot){
-        var leftElevatorRotation = new BABYLON.Vector3().copyFrom(this.leftElevatorZeroRotation);      
-        leftElevatorRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
-        this.leftElevator.rotationQuaternion = leftElevatorRotation.toQuaternion();
-        var rightElevatorRotation = new BABYLON.Vector3().copyFrom(this.rightElevatorZeroRotation);      
-        rightElevatorRotation.addInPlace(new BABYLON.Vector3(rot,0,0));
-        this.rightElevator.rotationQuaternion = rightElevatorRotation.toQuaternion();
+        this.leftElevator.rotationQuaternion.copyFrom(this.leftElevatorZeroRotation);
+        this.leftElevator.rotate(BABYLON.Vector3.Left(), rot);
+        this.rightElevator.rotationQuaternion.copyFrom(this.rightElevatorZeroRotation);
+        this.rightElevator.rotate(BABYLON.Vector3.Left(), rot);
+
     }
     applyLiftForce(){
         let lift = this.velocity.z * Math.abs(this.velocity.z) * 1.5;
@@ -238,8 +250,8 @@ export default class Airplane {
     }
     resetControls(){
         this.aileronControl(this.roll*Math.PI/8);
-        this.rudderControl(this.yaw*Math.PI/8);
-        this.elevatorControl(this.pitch*-Math.PI/8);
+        this.rudderControl(-this.yaw*Math.PI/8);
+        this.elevatorControl(-this.pitch*Math.PI/8);
         this.pitch = 0;
         this.yaw = 0;
         this.roll = 0;
@@ -260,36 +272,4 @@ export default class Airplane {
 
     
 }
-
-
-/*export default function scene(scene) {        
-
-
-    const tinyPlane = new Airplane(scene);
-
-    scene.registerBeforeRender(function () {
-		//box.physicsImpostor.applyForce(BABYLON.Vector3.Up().scale(forceMagnitude), box.getAbsolutePosition().add(contactLocalRefPoint));
-        tinyPlane.applyLiftForce();
-        tinyPlane.applyDragForce();
-        tinyPlane.applyThrustForce();
-	});
-    const speed = 0.5;
-    const textureOffsetSpeed = 0.02;
-
-    function update(time) {
-        const angle = time*speed;
-
-    }
-    function getAirplaneMesh(){
-        return tinyPlane.meshAll[0];
-    }
-    function getAirplane(){
-        return tinyPlane;
-    }
-    return {
-        update,
-        getAirplane,
-        getAirplaneMesh
-    }
-}*/
 

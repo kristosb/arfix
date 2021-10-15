@@ -280,6 +280,8 @@ export class AirplaneWW2 extends VehicleData{
             suspensionRestLength: 0.3,//0.3
             rollInfluence: 0.01, //0.01
         }
+        var rearWheelSettings = { ...settings };
+        rearWheelSettings.suspensionRestLength = 0.27;
         this.wheelsMesh = [
             meshAll[18], meshAll[19], meshAll[20]
         ];  
@@ -292,7 +294,7 @@ export class AirplaneWW2 extends VehicleData{
             [
                 {pos: this.wheelsMesh[0].position, radius: radius, isFront: true, params: settings},
                 {pos: this.wheelsMesh[1].position, radius: radius, isFront: true, params: settings},
-                {pos: this.wheelsMesh[2].position, radius: radius/2, isFront: false, params: settings},
+                {pos: this.wheelsMesh[2].position, radius: radius/2, isFront: false, params: rearWheelSettings},
             ];
         this.wheels.forEach(x=>x.pos.addInPlace(massOffset));
 

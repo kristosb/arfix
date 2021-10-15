@@ -103,7 +103,7 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
     hudMesh.material = material;
     //hudMesh.scaling.x = 0.1;
     //hudMesh.scaling.y = 0.1;
-    //hudMesh.position = new BABYLON.Vector3(0,0.5,-0.5);
+    //hudMesh.position = new BABYLON.Vector3(0,0,-0.5);
     
     
     //var hudCanvas = document.createElement('canvas');
@@ -187,15 +187,16 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
      */
     function linkWithMesh(mesh){
         mesh.addChild(hudMesh);
-        hudMesh.position = new BABYLON.Vector3(0,1.2,0);
+        hudMesh.position = new BABYLON.Vector3(0,0.8,0);//(0,1.2,0);
     }
     /**    
      * attach the hud to a vehicle     
      * @param {BABYLON.Camera} cam
      */
     function linkWithCamera(cam){
+        //hudMesh.translate(BABYLON.Vector3.Up(),20, BABYLON.Space.WORLD);// = new BABYLON.Vector3(0,0.1,2);
         hudMesh.parent = cam;
-        hudMesh.position = new BABYLON.Vector3(0,0.1,2);
+        //hudMesh.position = new BABYLON.Vector3(0,0.1,2);
     }
     /**    
      * attach the hud to a vehicle     
