@@ -33,12 +33,14 @@ export default function scene(scene) {
         ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.3, restitution: 0.7}, scene);
 
         var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
-        groundMat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        groundMat.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+        //groundMat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        //groundMat.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+        groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
+        groundMat.diffuseColor = new BABYLON.Color3(0.29, 0.26, 0.26);
         groundMat.backFaceCulling = false;
         ground.material = groundMat;
         ground.receiveShadows = true;
-
+/*
         //var texture = new BABYLON.CubeTexture(process.env.PUBLIC_URL+"/skybox", scene);
         //scene.createDefaultSkybox(texture, true, 100);
         var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:500.0}, scene);
@@ -49,7 +51,7 @@ export default function scene(scene) {
         skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
         skyboxMaterial.disableLighting = true;
         skybox.material = skyboxMaterial;
-
+*/
         return ground;
     }
     function makeClouds(){
@@ -139,7 +141,7 @@ export default function scene(scene) {
       //makeInstance(1, 0x44aa88,  0, 0, -0.5),
         makeGround(),
         makeBox(),
-        makeClouds()
+        //makeClouds()
 
         //makeWorld()
         //new Airplane(scene)

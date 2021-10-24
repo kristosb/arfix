@@ -304,7 +304,6 @@ export class AirplaneWW2 extends VehicleData{
         //chassis is the volume that represents weight, its used for vehicle physisc but not collisions
         var chassis = makebox(scene, bodySize, new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.1, .1, .1), "chassis");
         chassis.isVisible = false;       
-        
         // body visuals
         meshAll[0].removeChild(meshAll[11]);
         var visualMeshes = [meshAll[11]];//[rootVisualMesh];

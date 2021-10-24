@@ -9,6 +9,7 @@ import Hud from './Hud';*/
 
 import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
+//import 'babylonjs-materials';
 import * as Ammo from 'ammojs';
 //import * as CANNON from './cannon.js';
 //import * as CANNON from 'cannon';
@@ -22,7 +23,12 @@ import { AirplaneChassis, AirplaneFromMesh, AirplaneWW2} from './VehiclesData.js
 import DebugUI from './DebugUI.js';
 import HudPanel from './Hud';
 import {Clock} from './Clock';
-
+import SkySim from './SkySimulator.js';
+//import { SkyMaterial } from 'babylonjs-materials/sky/skyMaterial';
+/*var addShadows = function(mesh){
+    mesh.receiveShadows = true;
+    shadowGenerator.addShadowCaster(mesh);
+}*/
 
 export default function canvas(canvas)  {
     var preserveSize = true;
@@ -40,10 +46,12 @@ export default function canvas(canvas)  {
     const engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
     engine.loadingUIText = "Loading world and airplane...";
     engine.loadingUIBackgroundColor = "Purple";
-
     const scene = buildScene();
     const physics = buildGravity();
     const camera = followCameraCreate();//buildCamera(screenDimensions);
+    const lights = buildLight(scene);
+    const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, 1000);
+    sky.makeClouds();
     //camera.position = new BABYLON.Vector3(-4,0.1,-6);
     var ground = new SceneSubject();
     var inputMap = {};
@@ -67,6 +75,7 @@ export default function canvas(canvas)  {
         camera.lockedTarget =  vehicleData.chassisMesh;
         hud = new HudPanel(scene, canvas);
         hud.linkWithMesh(vehicleData.chassisMesh);
+        
 	}
     /*var vehicleData1 = null;
     meshAirplaneTask1.onSuccess = function (task) {
@@ -96,20 +105,22 @@ export default function canvas(canvas)  {
         
         // Create a basic BJS Scene object
         const scene = new BABYLON.Scene(engine);
-
-        // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
-        //const light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
-            // Lights
-        var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
-        light.intensity = 0.6;
-        light.specular = BABYLON.Color3.Black();
-
-        var light2 = new BABYLON.DirectionalLight("dir01", new BABYLON.Vector3(0, -0.5, -1.0), scene);
-        light2.position = new BABYLON.Vector3(0, 5, 5);
+        //scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
+        //scene.environmentTexture = BABYLON.BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
         // Return the created scene
         return scene;
     }
-
+    function buildLight(scene){
+        // Light
+        var sunLight = new BABYLON.PointLight("sunPointLight", new BABYLON.Vector3(0, 1, 0), scene);
+        sunLight.intensity = 0.5;
+        sunLight.setEnabled(true);
+        var ambientlight = new BABYLON.HemisphericLight("ambient", new BABYLON.Vector3(0, 1, 0), scene);
+        ambientlight.intensity =2;
+        ambientlight.diffuse = new BABYLON.Color3(0.96, 0.97, 0.93);
+        ambientlight.groundColor = new BABYLON.Color3(0, 0, 0);
+        return {sunLight, ambientlight};
+    }
     function buildGravity() {
         var gravityVector = new BABYLON.Vector3(0,-9.81, 0);
         //var physicsPlugin = new BABYLON.AmmoJSPlugin(undefined, Ammo, undefined);
@@ -174,8 +185,7 @@ export default function canvas(canvas)  {
         });
     };
     function registerActions(scene){
-
-            // Keyboard events
+        // Keyboard events
         //var inputMap = {};
         scene.actionManager = new BABYLON.ActionManager(scene);
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
@@ -268,14 +278,20 @@ export default function canvas(canvas)  {
                 vehicle.unbrake();
                 inputMap["b"] = null;
             }*/
-          }
-          if (inputMap["p"]) {
+            }
+            if (inputMap["p"]) {
             showImpostors(scene);
             }
             if (inputMap["o"]) {
                 scene.debugLayer.show();
-
             }
+            if (inputMap["1"]) {
+                sky.transitionSunInclination(0.025);
+            }
+            if (inputMap["2"]) {
+                sky.transitionSunInclination(-0.025);
+            }
+
     }
 
     function update() {
@@ -313,6 +329,7 @@ export default function canvas(canvas)  {
             engine.runRenderLoop(function () {
                 //actions();
                 hudUpdate();
+                sky.update();
                 scene.render();
                 //vehicleUpdate();
             });
