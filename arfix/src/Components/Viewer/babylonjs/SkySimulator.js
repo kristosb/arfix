@@ -32,7 +32,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {width:size, depth:size, height:size}, scene);
     skybox.material = skyboxMaterial;
     skybox.position.y = size/3;
-	//sunLight.position =  skyboxMaterial.sunPosition;
+	sunLight.position =  skyboxMaterial.sunPosition;
 
     var cloudMaterial = new BABYLON.StandardMaterial("mat", scene);
     var cloudTexture = new BABYLON.Texture("https://raw.githubusercontent.com/kristosb/arfix/b958a70382ccbf86294af1540cd1608e1af1e161/arfix/public/assets/textures/Skies0362_3_masked_S.png", scene);

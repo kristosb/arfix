@@ -196,9 +196,9 @@ export default function canvas(canvas)  {
         }));
         
         //);
-        scene.onBeforeRenderObservable.add(() => {
+        /*scene.onBeforeRenderObservable.add(() => {
             actions();
-        });
+        });*/
 
     }
     function actions(){
@@ -237,7 +237,9 @@ export default function canvas(canvas)  {
 
             
             if (inputMap["t"]) {
-                vehicle.accelerate(40);
+                //vehicle.accelerate(40);
+                vehicle.acceleration = 40;
+                //console.log("t");
                 //vehicle.forward(40);
                 //console.log(inputMap["t"]);
             }/*else if(inputMap["t"] !== null){
@@ -247,7 +249,9 @@ export default function canvas(canvas)  {
             }*/
 
             if (inputMap["g"]) {
-                vehicle.accelerate(-20);
+                //vehicle.accelerate(-20);
+                vehicle.acceleration = -20;
+                //console.log("g");
                 //vehicle.backward(20);
             }/*else if (inputMap["g"] !== null){
                 vehicle.backward(0);
@@ -256,7 +260,8 @@ export default function canvas(canvas)  {
 
 
             if (inputMap["f"]) {
-                vehicle.directionChange(0.5);
+                vehicle.direction = 0.5;
+                //vehicle.directionChange(0.5);
                 //vehicle.right(0.5);
             }/*else if (inputMap["f"] !== null ){
                 vehicle.left(0);
@@ -264,7 +269,8 @@ export default function canvas(canvas)  {
             }*/
 
             if (inputMap["h"]) {
-                vehicle.directionChange(-0.5);
+                vehicle.direction = -0.5;
+                //vehicle.directionChange(-0.5);
                 //vehicle.left(0.5);
             }/*else if(inputMap["h"] !== null){
                 vehicle.left(0);
@@ -272,7 +278,8 @@ export default function canvas(canvas)  {
             }*/
             
             if (inputMap["b"]) {
-                vehicle.brakeApply(10);
+                vehicle.breakingForce = 10;
+                //vehicle.brakeApply(10);
                 //vehicle.brake(10);
             }/*else if( inputMap["b"] !== null){
                 vehicle.unbrake();
@@ -280,7 +287,7 @@ export default function canvas(canvas)  {
             }*/
             }
             if (inputMap["p"]) {
-            showImpostors(scene);
+                showImpostors(scene);
             }
             if (inputMap["o"]) {
                 scene.debugLayer.show();
@@ -327,7 +334,7 @@ export default function canvas(canvas)  {
 
         //assetsManager.onFinish = function (tasks) {
             engine.runRenderLoop(function () {
-                //actions();
+                actions();
                 hudUpdate();
                 sky.update();
                 scene.render();
