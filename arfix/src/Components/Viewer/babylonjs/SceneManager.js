@@ -184,8 +184,6 @@ export default function canvas(canvas)  {
 
     }
     function actions(){
-        var pow = 1;
-
         //scene.onBeforePhysicsObservable.add( () => {
         //scene.onBeforeRenderObservable.add(() => {
             if(tinyAirplane.vehicle!==null){
@@ -198,9 +196,11 @@ export default function canvas(canvas)  {
             }
             if (inputMap["a"]) {
                 tinyAirplane.airplane.yaw = 1;
+                tinyAirplane.vehicle.direction = 0.5;
             }
             if (inputMap["d"]) {
                 tinyAirplane.airplane.yaw = -1;
+                tinyAirplane.vehicle.direction = -0.5;
             }
             if (inputMap["w"]) {
                 tinyAirplane.airplane.pitch = 1;
@@ -211,62 +211,17 @@ export default function canvas(canvas)  {
             if (inputMap["m"]) {
                 tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower + 0.05;//0.05
                 tinyAirplane.airplane.speedModifier = 0.12; //0.12
+                tinyAirplane.vehicle.acceleration = 40;
             }
             if (inputMap["n"]) {
                 tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower - 0.05;//0.05
-            }
-
-
-            
-            if (inputMap["t"]) {
-                //vehicle.accelerate(40);
-                tinyAirplane.vehicle.acceleration = 40;
-                //console.log("t");
-                //vehicle.forward(40);
-                //console.log(inputMap["t"]);
-            }/*else if(inputMap["t"] !== null){
-                vehicle.forward(0);
-                //console.log(inputMap["t"]);
-                inputMap["t"] = null;
-            }*/
-
-            if (inputMap["g"]) {
-                //vehicle.accelerate(-20);
                 tinyAirplane.vehicle.acceleration = -20;
-                //console.log("g");
-                //vehicle.backward(20);
-            }/*else if (inputMap["g"] !== null){
-                vehicle.backward(0);
-                inputMap["g"] = null;
-            }*/
-
-
-            if (inputMap["f"]) {
-                tinyAirplane.vehicle.direction = 0.5;
-                //vehicle.directionChange(0.5);
-                //vehicle.right(0.5);
-            }/*else if (inputMap["f"] !== null ){
-                vehicle.left(0);
-                inputMap["f"] = null;
-            }*/
-
-            if (inputMap["h"]) {
-                tinyAirplane.vehicle.direction = -0.5;
-                //vehicle.directionChange(-0.5);
-                //vehicle.left(0.5);
-            }/*else if(inputMap["h"] !== null){
-                vehicle.left(0);
-                inputMap["h"] = null;
-            }*/
+            }
             
             if (inputMap["b"]) {
                 tinyAirplane.vehicle.breakingForce = 10;
-                //vehicle.brakeApply(10);
-                //vehicle.brake(10);
-            }/*else if( inputMap["b"] !== null){
-                vehicle.unbrake();
-                inputMap["b"] = null;
-            }*/
+            }
+
             }
             if (inputMap["p"]) {
                 showImpostors(scene);
