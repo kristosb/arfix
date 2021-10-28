@@ -64,7 +64,8 @@ export default class VehicleAmmo{
             wheelInfo.set_m_rollInfluence(wheel.params.rollInfluence);
         });
         this.rearFrontSteeringReverse();
-        // if updated in the main animation loop artifacts of wheels not catching up at high speed visible
+        // if updated in the main animation loop artifacts of wheels not catching up at high speed visible 
+        //this.scene.onBeforeAnimationsObservable.add( () => {
         this.scene.registerBeforeRender(function () {
             that.update();
         });
@@ -84,7 +85,6 @@ export default class VehicleAmmo{
     update(){ 
         this.wheelsTransform();
         if(this.numOfWheelsOnGround()>0) this.registerForces(); 
-        //console.log(this.numOfWheelsOnGround());
     }
     rearFrontSteeringReverse(){
         this.reverseSteeringSign = -1;
