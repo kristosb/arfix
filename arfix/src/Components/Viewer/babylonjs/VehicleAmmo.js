@@ -27,13 +27,6 @@ export default class VehicleAmmo{
         this.createVehicle( new BABYLON.Vector3(0,1,0),new BABYLON.Vector3(0,0,0).toQuaternion());
         //this.rearFrontSteeringReverse();
         //this.registerForces();
-        console.log(this.vehicle);
-        console.log(this.vehicle.getWheelInfo(0));
-        console.log(this.vehicle.getWheelInfo(0).get_m_raycastInfo());
-        console.log(this.vehicle.getWheelInfo(0).get_m_raycastInfo().get_m_suspensionLength());
-        console.log(this.vehicle.getWheelInfo(0).get_m_raycastInfo().get_m_isInContact());
-        
-        console.log(this.vehicle.getWheelInfo(0).get_m_bIsFrontWheel());
     }
     createVehicle( pos,quat){
         var physicsWorld = this.scene.getPhysicsEngine().getPhysicsPlugin().world;

@@ -55,50 +55,32 @@ export default function canvas(canvas)  {
     //camera.position = new BABYLON.Vector3(-4,0.1,-6);
     var ground = new SceneSubject();
     var inputMap = {};
-
-    var vehicleData = null;
-    var vehicle = null;
-    var airplane = null;
-    var hud = null;
+    var tinyAirplane = {vehicleData:null,vehicle:null, airplane:null, hud: null };
     var assetsManager = new BABYLON.AssetsManager(scene);
     //var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
     meshAirplaneTask.onSuccess = function (task) {
         //vehicleData = new AirplaneFromMesh(scene, task.loadedMeshes);//AirplaneChassis(scene);//
-        vehicleData = new AirplaneWW2(scene, task.loadedMeshes);
-        task.loadedMeshes.forEach((x,i)=>console.log(i,x.id));
-        vehicle = new VehicleAmmo(scene, vehicleData);
-        //vehicle = new VehicleAmmo(scene, new AirplaneFromMesh(scene, task.loadedMeshes));
-        airplane = new Airplane(scene, vehicleData.chassisMesh, vehicleData.controls);
+        tinyAirplane.vehicleData = new AirplaneWW2(scene, task.loadedMeshes);
+        
+        //task.loadedMeshes.forEach((x,i)=>console.log(i,x.id));
+        tinyAirplane.vehicle = new VehicleAmmo(scene, tinyAirplane.vehicleData);
+        tinyAirplane.airplane = new Airplane(scene, tinyAirplane.vehicleData.chassisMesh, tinyAirplane.vehicleData.controls);
         //camera = followCameraCreate(vehicleData.chassisMesh);
         //firstPersonCamera(vehicleData.chassisMesh);
-        camera.lockedTarget =  vehicleData.chassisMesh;
-        hud = new HudPanel(scene, canvas);
-        hud.linkWithMesh(vehicleData.chassisMesh);
+        camera.lockedTarget =  tinyAirplane.vehicleData.chassisMesh;
+        tinyAirplane.hud = new HudPanel(scene, canvas);
+        tinyAirplane.hud.linkWithMesh(tinyAirplane.vehicleData.chassisMesh);
         
 	}
-    /*var vehicleData1 = null;
-    meshAirplaneTask1.onSuccess = function (task) {
-        //vehicleData1 = new AirplaneFromMesh(scene, task.loadedMeshes);//AirplaneChassis(scene);//
-        task.loadedMeshes.forEach((x,i)=>console.log(i,x.id));
-	}*/
+
     assetsManager.onTaskSuccess = function (task){
         console.log("manager finished");
-        //vehicle.chassisMesh.physicsImpostor.registerBeforePhysicsStep(actions());
-        //vehicle.chassisMesh.physicsImpostor.beforeStep = actions();
-        //hud = new DebugUI(canvas.width, canvas.height, scene);
-        //hud.linkWithMesh(vehicleData.chassisMesh);
-
-        //hud.lockToCamera(camera);
-        //console.log("mesh",hud.hudMesh);
-        //camera.lockedTarget =  hud.hudMesh;
-        //hud.linkWithCamera(camera);
         registerActions(scene);
     }
     assetsManager.load();
 
     //showAxis(5,scene);
-    //registerActions(scene);
 
 
     function buildScene() {
@@ -206,39 +188,39 @@ export default function canvas(canvas)  {
 
         //scene.onBeforePhysicsObservable.add( () => {
         //scene.onBeforeRenderObservable.add(() => {
-            if(vehicle!==null){
+            if(tinyAirplane.vehicle!==null){
 
             if (inputMap["q"]) {
-                airplane.roll = -1;
+                tinyAirplane.airplane.roll = -1;
             }
             if (inputMap["e"]) {
-                airplane.roll = 1;
+                tinyAirplane.airplane.roll = 1;
             }
             if (inputMap["a"]) {
-                airplane.yaw = 1;
+                tinyAirplane.airplane.yaw = 1;
             }
             if (inputMap["d"]) {
-                airplane.yaw = -1;
+                tinyAirplane.airplane.yaw = -1;
             }
             if (inputMap["w"]) {
-                airplane.pitch = 1;
+                tinyAirplane.airplane.pitch = 1;
             }
             if (inputMap["s"]) {
-                airplane.pitch = -1;
+                tinyAirplane.airplane.pitch = -1;
             }
             if (inputMap["m"]) {
-                airplane.enginePower = airplane.enginePower + 0.05;//0.05
-                airplane.speedModifier = 0.12; //0.12
+                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower + 0.05;//0.05
+                tinyAirplane.airplane.speedModifier = 0.12; //0.12
             }
             if (inputMap["n"]) {
-                airplane.enginePower = airplane.enginePower - 0.05;//0.05
+                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower - 0.05;//0.05
             }
 
 
             
             if (inputMap["t"]) {
                 //vehicle.accelerate(40);
-                vehicle.acceleration = 40;
+                tinyAirplane.vehicle.acceleration = 40;
                 //console.log("t");
                 //vehicle.forward(40);
                 //console.log(inputMap["t"]);
@@ -250,7 +232,7 @@ export default function canvas(canvas)  {
 
             if (inputMap["g"]) {
                 //vehicle.accelerate(-20);
-                vehicle.acceleration = -20;
+                tinyAirplane.vehicle.acceleration = -20;
                 //console.log("g");
                 //vehicle.backward(20);
             }/*else if (inputMap["g"] !== null){
@@ -260,7 +242,7 @@ export default function canvas(canvas)  {
 
 
             if (inputMap["f"]) {
-                vehicle.direction = 0.5;
+                tinyAirplane.vehicle.direction = 0.5;
                 //vehicle.directionChange(0.5);
                 //vehicle.right(0.5);
             }/*else if (inputMap["f"] !== null ){
@@ -269,7 +251,7 @@ export default function canvas(canvas)  {
             }*/
 
             if (inputMap["h"]) {
-                vehicle.direction = -0.5;
+                tinyAirplane.vehicle.direction = -0.5;
                 //vehicle.directionChange(-0.5);
                 //vehicle.left(0.5);
             }/*else if(inputMap["h"] !== null){
@@ -278,7 +260,7 @@ export default function canvas(canvas)  {
             }*/
             
             if (inputMap["b"]) {
-                vehicle.breakingForce = 10;
+                tinyAirplane.vehicle.breakingForce = 10;
                 //vehicle.brakeApply(10);
                 //vehicle.brake(10);
             }/*else if( inputMap["b"] !== null){
@@ -309,25 +291,17 @@ export default function canvas(canvas)  {
         engine.resize();
     }
 
-    //function vehicleUpdate(){
-    //    if(vehicle!==null) vehicle.update();
-    //}
-
     function hudUpdate(){
-        if(airplane!==null){ 
+        if(tinyAirplane.airplane!==null){ 
             const elapsedTime = clock.getElapsedTime();
-            hud.setRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(airplane.rotation.y),
-                                                -BABYLON.Tools.ToDegrees(airplane.rotation.x),
-                                                BABYLON.Tools.ToDegrees(airplane.rotation.z)));
-            hud.setSpeed(airplane.velocity.z);
-            hud.setPower(airplane.enginePower);
-            hud.setAltitude(airplane.collision.position.y);
-            hud.update(elapsedTime);
-            //hud.speed = airplane.velocity.z;
-            //hud.power = airplane.enginePower;
-            //hud.heading = 180 +BABYLON.Tools.ToDegrees(airplane.rotation.y);
-            //hud.setPitchAndRoll( -BABYLON.Tools.ToDegrees(airplane.rotation.x),BABYLON.Tools.ToDegrees(airplane.rotation.z));
-        }
+            tinyAirplane.hud.setRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.y),
+                                                -BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.x),
+                                                BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.z)));
+            tinyAirplane.hud.setSpeed(tinyAirplane.airplane.velocity.z);
+            tinyAirplane.hud.setPower(tinyAirplane.airplane.enginePower);
+            tinyAirplane.hud.setAltitude(tinyAirplane.airplane.collision.position.y);
+            tinyAirplane.hud.update(elapsedTime);
+            }
     }
 
     function animate(){
