@@ -55,23 +55,26 @@ export default function canvas(canvas)  {
     //camera.position = new BABYLON.Vector3(-4,0.1,-6);
     var ground = new SceneSubject();
     var inputMap = {};
-    var tinyAirplane = {vehicleData:null,vehicle:null, airplane:null, hud: null };
+    var tinyAirplane = {
+        vehicleData:null,
+        vehicle:null, 
+        airplane:null, 
+        hud: null 
+    };
     var assetsManager = new BABYLON.AssetsManager(scene);
     //var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
     meshAirplaneTask.onSuccess = function (task) {
         //vehicleData = new AirplaneFromMesh(scene, task.loadedMeshes);//AirplaneChassis(scene);//
         tinyAirplane.vehicleData = new AirplaneWW2(scene, task.loadedMeshes);
-        
-        //task.loadedMeshes.forEach((x,i)=>console.log(i,x.id));
         tinyAirplane.vehicle = new VehicleAmmo(scene, tinyAirplane.vehicleData);
         tinyAirplane.airplane = new Airplane(scene, tinyAirplane.vehicleData.chassisMesh, tinyAirplane.vehicleData.controls);
+        tinyAirplane.hud = new HudPanel(scene, canvas);
+        tinyAirplane.hud.linkWithMesh(tinyAirplane.vehicleData.chassisMesh);    
         //camera = followCameraCreate(vehicleData.chassisMesh);
         //firstPersonCamera(vehicleData.chassisMesh);
-        camera.lockedTarget =  tinyAirplane.vehicleData.chassisMesh;
-        tinyAirplane.hud = new HudPanel(scene, canvas);
-        tinyAirplane.hud.linkWithMesh(tinyAirplane.vehicleData.chassisMesh);
-        
+        camera.lockedTarget =  tinyAirplane.vehicleData.chassisMesh;  
+        //task.loadedMeshes.forEach((x,i)=>console.log(i,x.id));
 	}
 
     assetsManager.onTaskSuccess = function (task){
@@ -156,7 +159,6 @@ export default function canvas(canvas)  {
         return sceneSubjects;
     }
     const showImpostors = function(scene) {
-
         const physicsViewer = new BABYLON.PhysicsViewer(scene);
         scene.meshes.forEach(mesh => {
             if (mesh.physicsImpostor == null) {
@@ -209,12 +211,12 @@ export default function canvas(canvas)  {
                 tinyAirplane.airplane.pitch = -1;
             }
             if (inputMap["m"]) {
-                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower + 0.05;//0.05
+                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower + 0.005;
                 tinyAirplane.airplane.speedModifier = 0.12; //0.12
                 tinyAirplane.vehicle.acceleration = 40;
             }
             if (inputMap["n"]) {
-                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower - 0.05;//0.05
+                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower - 0.005;
                 tinyAirplane.vehicle.acceleration = -20;
             }
             
@@ -260,14 +262,12 @@ export default function canvas(canvas)  {
     }
 
     function animate(){
-
         //assetsManager.onFinish = function (tasks) {
             engine.runRenderLoop(function () {
                 actions();
                 hudUpdate();
                 sky.update();
                 scene.render();
-                //vehicleUpdate();
             });
         //}
     }
