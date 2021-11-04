@@ -10,6 +10,7 @@ import Hud from './Hud';*/
 import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
 //import 'babylonjs-materials';
+//import { ShadowOnlyMaterial } from "babylonjs-materials";
 import * as Ammo from 'ammojs';
 //import * as CANNON from './cannon.js';
 //import * as CANNON from 'cannon';
@@ -48,10 +49,13 @@ export default function canvas(canvas)  {
     engine.loadingUIBackgroundColor = "Purple";
     const scene = buildScene();
     const physics = buildGravity();
-    const camera = followCameraCreate();//buildCamera(screenDimensions);
+    const camera = followCameraCreate();//buildCamera(screenDimensions);//
     const lights = buildLight(scene);
-    const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, 1000);
+    const worldSize = 500;
+    const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, 500);
     sky.makeClouds();
+    camera.maxZ = worldSize;
+    console.log("max",camera.maxZ);
     //camera.position = new BABYLON.Vector3(-4,0.1,-6);
     var ground = new SceneSubject();
     var inputMap = {};
@@ -75,6 +79,7 @@ export default function canvas(canvas)  {
         //firstPersonCamera(vehicleData.chassisMesh);
         camera.lockedTarget =  tinyAirplane.vehicleData.chassisMesh;  
         //task.loadedMeshes.forEach((x,i)=>console.log(i,x.id));
+        buildShadows(camera, lights.sunLight,tinyAirplane.vehicleData.visualMeshes[0]);//camera, lights.sunLight, ground.cubes[1]);
 	}
 
     assetsManager.onTaskSuccess = function (task){
@@ -82,7 +87,7 @@ export default function canvas(canvas)  {
         registerActions(scene);
     }
     assetsManager.load();
-
+    //buildShadows(camera);
     //showAxis(5,scene);
 
 
@@ -97,14 +102,37 @@ export default function canvas(canvas)  {
     }
     function buildLight(scene){
         // Light
-        var sunLight = new BABYLON.PointLight("sunPointLight", new BABYLON.Vector3(0, 1, 0), scene);
-        sunLight.intensity = 0.5;
+        //var sunLight = new BABYLON.PointLight("sunPointLight", new BABYLON.Vector3(0, 1, 0), scene);
+        var sunLight = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0, -1, 0), scene);
+        sunLight.position = new BABYLON.Vector3(0, 20, 0);
+        sunLight.intensity = 1;
         sunLight.setEnabled(true);
         var ambientlight = new BABYLON.HemisphericLight("ambient", new BABYLON.Vector3(0, 1, 0), scene);
         ambientlight.intensity =2;
         ambientlight.diffuse = new BABYLON.Color3(0.96, 0.97, 0.93);
         ambientlight.groundColor = new BABYLON.Color3(0, 0, 0);
+        ambientlight.setEnabled(true);
         return {sunLight, ambientlight};
+    }
+    function buildShadows(camera, light, mesh){//camera, light1, mesh){
+        //console.log("box",light);
+        //camera.maxZ=1000;
+        engine.getCaps().maxVaryingVectors = 16;
+        //var light = new BABYLON.DirectionalLight("dir01", new BABYLON.Vector3(-1, -2, -1), scene);
+        //light.intensity = 3;
+        light.position = new BABYLON.Vector3(0, 40, 0);
+        light.direction =new BABYLON.Vector3(0, -2, 0);
+        //var torus = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+        //torus.position = new BABYLON.Vector3(0, 10,0);
+        var shadowGenerator = new BABYLON.CascadedShadowGenerator(1024, light);
+        shadowGenerator.getShadowMap().renderList.push(mesh);
+        shadowGenerator.lambda = 1;     //0 -full lin, 1 full log
+        shadowGenerator.shadowMaxZ = camera.maxZ;
+        //shadowGenerator.shadowMaxZ = 50;
+        shadowGenerator.cascadeBlendPercentage = 0;
+        shadowGenerator.depthClamp = false;
+        shadowGenerator.splitFrustum();
+        return shadowGenerator;
     }
     function buildGravity() {
         var gravityVector = new BABYLON.Vector3(0,-9.81, 0);

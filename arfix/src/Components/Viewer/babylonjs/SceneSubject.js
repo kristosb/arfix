@@ -31,8 +31,14 @@ export default function scene(scene) {
         //ground.material =  mat;//new BABYLON.GridMaterial("groundMaterial", scene);
         ground.setAbsolutePosition(new BABYLON.Vector3(0,-1,0) );
         ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.3, restitution: 0.7}, scene);
-
+        //https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/Playground/textures/ground.jpg
         var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
+
+        //groundMat.diffuseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/Playground/textures/ground.jpg", scene);
+        //groundMat.diffuseTexture.uScale = 6;
+        //groundMat.diffuseTexture.vScale = 6;
+        groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
+
         //groundMat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         //groundMat.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
         groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -89,7 +95,7 @@ export default function scene(scene) {
       groundMat.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
       groundMat.backFaceCulling = false;
       ground.material = groundMat;
-      ground.receiveShadows = true;
+      //ground.receiveShadows = true;
 
 
       return ground;
@@ -161,6 +167,6 @@ export default function scene(scene) {
     }
 
     return {
-        update
+        update,cubes
     }
 }

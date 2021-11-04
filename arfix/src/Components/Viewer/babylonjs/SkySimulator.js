@@ -32,7 +32,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {width:size, depth:size, height:size}, scene);
     skybox.material = skyboxMaterial;
     skybox.position.y = size/3;
-	sunLight.position =  skyboxMaterial.sunPosition;
+	//sunLight.position =  skyboxMaterial.sunPosition;
 
     var cloudMaterial = new BABYLON.StandardMaterial("mat", scene);
     var cloudTexture = new BABYLON.Texture("https://raw.githubusercontent.com/kristosb/arfix/b958a70382ccbf86294af1540cd1608e1af1e161/arfix/public/assets/textures/Skies0362_3_masked_S.png", scene);
@@ -49,14 +49,15 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     faceUV[3] = new BABYLON.Vector4(1, 0, 0, 1);
     faceUV[4] = new BABYLON.Vector4(0, 0, 0, 0);
     faceUV[5] = new BABYLON.Vector4(0, 0, 0, 0);
-    const cloudBoxSizeMult = size/1024+1;
+    const cloudBoxSizeMult = (size/1024);
     var cloudOptions = {
-        width: 1024*cloudBoxSizeMult,
-        height: 292*cloudBoxSizeMult,
-        depth: 1024*cloudBoxSizeMult,
+        width: 1024*cloudBoxSizeMult+1,
+        height: 292*cloudBoxSizeMult+1,
+        depth: 1024*cloudBoxSizeMult+1,
         wrap:true,
         faceUV: faceUV
     };
+    console.log("cloud",cloudOptions.width, cloudBoxSizeMult, size);
     var cloudBox = BABYLON.MeshBuilder.CreateBox('box', cloudOptions, scene);
     cloudBox.material = cloudMaterial;
     cloudBox.position.y = 70;
@@ -76,7 +77,8 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         console.log("dir",dirNorm);
         dirNorm.normalize();
         console.log("dirsub",dirNorm);
-        ambientLight.direction.copyFrom(dirNorm);
+        ambientLight.direction.copyFromFloats(dirNorm.x, dirNorm.y, dirNorm.z);//copyFrom(dirNorm);
+        sunLight.direction.copyFromFloats(-dirNorm.x, -dirNorm.y, -dirNorm.z);
         if(dirNorm.y<0) ambientLight.intensity = 1; else ambientLight.intensity = 2;
         //console.log(ambientlight.direction);
     }
