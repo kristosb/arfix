@@ -100,15 +100,16 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         move();
         setLightDirection();
     }
-    function makeClouds(){
+    function makeClouds(area){
         var spriteManagerClouds = new BABYLON.SpriteManager("cloudsManager", "http://www.babylonjs.com/Scenes/Clouds/cloud.png", 1000, 256, scene);
         //spriteManagerClouds.blendMode
+        //BABYLON.Scalar.RandomRange(0.4, 1)
         for (var i = 0; i < 200; i++) {
               var clouds = new BABYLON.Sprite("clouds", spriteManagerClouds);
               //clouds.color = new BABYLON.Color3(0.87, 0.93, 0.91);
-              clouds.position.x = Math.random() * 1000 - 500;
+              clouds.position.x = Math.random() * area - area/2;
               clouds.position.y = Math.random() * 50 + 150;
-              clouds.position.z = Math.random() * 1000 - 500; 
+              clouds.position.z = Math.random() * area - area/2; 
               clouds.size = Math.random() * 50;
               if (Math.round(Math.random() * 5) === 0) {
                   clouds.angle = Math.PI * 90 / 180;            

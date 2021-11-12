@@ -242,7 +242,7 @@ export default class Airplane {
     propellerSpeedUpdate(){
         if (this.enginePowerPrev !== this.enginePower){
             if(this.enginePower) this.animationGroup.play(true); else this.animationGroup.play(false);
-            this.animationGroup.speedRatio = this.enginePower*5;
+            this.animationGroup.speedRatio = this.enginePower*4;
         }
         this.enginePowerPrev = this.enginePower;
     }

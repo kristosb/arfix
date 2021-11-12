@@ -30,6 +30,15 @@ import SkySim from './SkySimulator.js';
     mesh.receiveShadows = true;
     shadowGenerator.addShadowCaster(mesh);
 }*/
+function createPhysicsImpostor(scene, entity, impostor, options, reparent) {
+    if (entity == null) return;
+    entity.checkCollisions = false;
+    const parent = entity.parent;
+    if (reparent === true) entity.parent = null;
+    entity.physicsImpostor = new BABYLON.PhysicsImpostor(entity, impostor, options, scene);
+    //console.log(entity.physicsImpostor.physicsBody);
+    if (reparent === true) entity.parent = parent;
+};
 
 export default function canvas(canvas)  {
     var preserveSize = true;
@@ -48,16 +57,19 @@ export default function canvas(canvas)  {
     engine.loadingUIText = "Loading world and airplane...";
     engine.loadingUIBackgroundColor = "Purple";
     const scene = buildScene();
+    
     const physics = buildGravity();
+    const physicsViewer = new BABYLON.PhysicsViewer(scene);
     const camera = followCameraCreate();//buildCamera(screenDimensions);//
     const lights = buildLight(scene);
-    const worldSize = 500;
-    const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, 500);
-    sky.makeClouds();
-    camera.maxZ = worldSize;
+    const worldSize = 800;
+    const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, worldSize);
+    sky.makeClouds(worldSize);
+    camera.maxZ = worldSize*1.4;
     console.log("max",camera.maxZ);
     //camera.position = new BABYLON.Vector3(-4,0.1,-6);
-    var ground = new SceneSubject();
+    //var ground = new SceneSubject().makeTerrain(worldSize);
+    var ground = null;
     var inputMap = {};
     var tinyAirplane = {
         vehicleData:null,
@@ -66,25 +78,42 @@ export default function canvas(canvas)  {
         hud: null 
     };
     var assetsManager = new BABYLON.AssetsManager(scene);
-    //var meshAirplaneTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/", "airplane.glb");
+    var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_1_opt.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
+    meshWorldTask.onSuccess = function (task) {   
+        var meshAll = task.loadedMeshes;
+        meshAll[0].removeChild(meshAll[1]);
+        const ground = meshAll[1];
+
+        ground.setParent(null);   
+        ground.position.y -= 40; 
+        ground.scaling = ground.scaling.multiplyByFloats(8,8,8);  
+        ground.physicsImpostor = new BABYLON.PhysicsImpostor(
+            ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.3 }, scene
+        );
+        console.log(ground);
+        meshAll[0].dispose();
+        ground.receiveShadows = true;
+        
+        //physicsViewer.showImpostor(ground.physicsImpostor, ground);
+        console.log("world finished");
+        
+    }
     meshAirplaneTask.onSuccess = function (task) {
-        //vehicleData = new AirplaneFromMesh(scene, task.loadedMeshes);//AirplaneChassis(scene);//
         tinyAirplane.vehicleData = new AirplaneWW2(scene, task.loadedMeshes);
         tinyAirplane.vehicle = new VehicleAmmo(scene, tinyAirplane.vehicleData);
         tinyAirplane.airplane = new Airplane(scene, tinyAirplane.vehicleData.chassisMesh, tinyAirplane.vehicleData.controls);
         tinyAirplane.hud = new HudPanel(scene, canvas);
-        tinyAirplane.hud.linkWithMesh(tinyAirplane.vehicleData.chassisMesh);    
-        //camera = followCameraCreate(vehicleData.chassisMesh);
-        //firstPersonCamera(vehicleData.chassisMesh);
-        camera.lockedTarget =  tinyAirplane.vehicleData.chassisMesh;  
-        //task.loadedMeshes.forEach((x,i)=>console.log(i,x.id));
-        buildShadows(camera, lights.sunLight,tinyAirplane.vehicleData.visualMeshes[0]);//camera, lights.sunLight, ground.cubes[1]);
+        tinyAirplane.hud.linkWithMesh(tinyAirplane.vehicleData.chassisMesh);  
+        camera.lockedTarget =  tinyAirplane.vehicleData.chassisMesh; 
+        console.log("airplane finished");
+        //buildShadows(camera, lights.sunLight,tinyAirplane.vehicleData.visualMeshes[0]);//camera, lights.sunLight, ground.cubes[1]);
 	}
 
-    assetsManager.onTaskSuccess = function (task){
-        console.log("manager finished");
+    assetsManager.onFinish= function (task){
         registerActions(scene);
+        console.log("manager finished");
+
     }
     assetsManager.load();
     //buildShadows(camera);
@@ -187,7 +216,7 @@ export default function canvas(canvas)  {
         return sceneSubjects;
     }
     const showImpostors = function(scene) {
-        const physicsViewer = new BABYLON.PhysicsViewer(scene);
+        
         scene.meshes.forEach(mesh => {
             if (mesh.physicsImpostor == null) {
                 // no physics impostor, skip
@@ -253,7 +282,7 @@ export default function canvas(canvas)  {
             }
 
             }
-            if (inputMap["p"]) {
+            if (inputMap["i"]) {
                 showImpostors(scene);
             }
             if (inputMap["o"]) {
@@ -264,6 +293,9 @@ export default function canvas(canvas)  {
             }
             if (inputMap["2"]) {
                 sky.transitionSunInclination(-0.025);
+            }
+            if (inputMap["p"]) {
+                scene.physicsEnabled = !scene.physicsEnabled;
             }
 
     }

@@ -285,7 +285,7 @@ export class AirplaneWW2 extends VehicleData{
         this.wheelsMesh = [
             meshAll[18], meshAll[19], meshAll[20]
         ];  
-        this.wheelsMesh .forEach(m=>meshAll[0].removeChild(m));
+        this.wheelsMesh.forEach(m=>meshAll[0].removeChild(m));
         meshAll[0].translate(new BABYLON.Vector3.Up(),0.75,BABYLON.Space.WORLD);
 
         const radius = 0.225/2;//0.225/2;
