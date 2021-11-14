@@ -13,7 +13,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     var then = 0;
     var interval= 0.05;
 
-    ambientLight.intensity =2;
+    ambientLight.intensity = 2;
     ambientLight.diffuse = new BABYLON.Color3(0.96, 0.97, 0.93);
 	ambientLight.groundColor = new BABYLON.Color3(0, 0, 0);
     //sunLight.intensity = 2;
@@ -34,12 +34,13 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     skybox.position.y = size/3;
 	//sunLight.position =  skyboxMaterial.sunPosition;
 
-    var cloudMaterial = new BABYLON.StandardMaterial("mat", scene);
+    var cloudMaterial = new BABYLON.StandardMaterial("farClouds", scene);
     var cloudTexture = new BABYLON.Texture("https://raw.githubusercontent.com/kristosb/arfix/b958a70382ccbf86294af1540cd1608e1af1e161/arfix/public/assets/textures/Skies0362_3_masked_S.png", scene);
     cloudMaterial.diffuseTexture = cloudTexture;
     cloudMaterial.backFaceCulling = false;
     cloudMaterial.twoSidedLighting = true;
     cloudMaterial.diffuseTexture.hasAlpha = true;
+    cloudMaterial.emissiveColor = new BABYLON.Color3(135/255, 123/255, 78/255);
 
     var faceUV = new Array(6);
 
@@ -61,6 +62,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     var cloudBox = BABYLON.MeshBuilder.CreateBox('box', cloudOptions, scene);
     cloudBox.material = cloudMaterial;
     cloudBox.position.y = 70;
+    transitionSunInclination(0);
 
     function calcRaylight(){
         var rayligh = convertRange(followCam.position.y,[60,500],[2,0])+convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[0,2]);
@@ -79,7 +81,9 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         console.log("dirsub",dirNorm);
         ambientLight.direction.copyFromFloats(dirNorm.x, dirNorm.y, dirNorm.z);//copyFrom(dirNorm);
         sunLight.direction.copyFromFloats(-dirNorm.x, -dirNorm.y, -dirNorm.z);
-        if(dirNorm.y<0) ambientLight.intensity = 1; else ambientLight.intensity = 2;
+        ambientLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[2,0.1]);
+        sunLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[1,5]);;
+        //if(dirNorm.y<0) ambientLight.intensity = 1; else ambientLight.intensity = 2;
         //console.log(ambientlight.direction);
     }
     // evening  luminance =0.1 and decrease turbo = 5
@@ -93,9 +97,10 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         return ( value - r1[ 0 ] ) * ( r2[ 1 ] - r2[ 0 ] ) / ( r1[ 1 ] - r1[ 0 ] ) + r2[ 0 ];
     }  
     function transitionSunInclination( interval = 0.025){
+        const limit = 0.48;
         skyboxMaterial.inclination += interval;
-        if (skyboxMaterial.inclination > 0.5) skyboxMaterial.inclination = 0.5;
-        if (skyboxMaterial.inclination < -0.5) skyboxMaterial.inclination = -0.5;
+        if (skyboxMaterial.inclination >= limit) skyboxMaterial.inclination = limit;
+        if (skyboxMaterial.inclination <= -limit) skyboxMaterial.inclination = -limit;
         console.log(skyboxMaterial.inclination);
         move();
         setLightDirection();
@@ -108,7 +113,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
               var clouds = new BABYLON.Sprite("clouds", spriteManagerClouds);
               //clouds.color = new BABYLON.Color3(0.87, 0.93, 0.91);
               clouds.position.x = Math.random() * area - area/2;
-              clouds.position.y = Math.random() * 50 + 150;
+              clouds.position.y = Math.random() * 50 + 100;
               clouds.position.z = Math.random() * area - area/2; 
               clouds.size = Math.random() * 50;
               if (Math.round(Math.random() * 5) === 0) {
