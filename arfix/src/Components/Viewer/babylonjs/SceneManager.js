@@ -79,7 +79,7 @@ export default function canvas(canvas)  {
     //var ground = new SceneSubject().makeTerrain(worldSize);
     var ground = null;
     var groundShadow = null;
-    groundShadow = new ShadowManager(lights.sunLight );
+    groundShadow = new ShadowManager(lights.sunLight);
     var inputMap = {};
     var tinyAirplane = {
         vehicleData:null,
@@ -107,6 +107,10 @@ export default function canvas(canvas)  {
         ground.material= material;*/  
         meshAll[0].dispose();
         ground.receiveShadows = true;
+        //optimization
+        ground.material.freeze();
+        ground.freezeWorldMatrix();
+        ground.doNotSyncBoundingInfo = true;
         groundShadow.addMesh(ground);
         console.log("world finished");
         
@@ -122,15 +126,14 @@ export default function canvas(canvas)  {
         tinyAirplane.vehicleData.chassisMesh.setAbsolutePosition(new BABYLON.Vector3(60,8,100));
         tinyAirplane.vehicleData.visualMeshes[0].receiveShadows = true;
         groundShadow.addMesh(tinyAirplane.vehicleData.visualMeshes[0]);
+        //optimization
+        tinyAirplane.vehicleData.visualMeshes[0].material.freeze();
         console.log("airplane finished");
     }
 
     assetsManager.onFinish= function (task){
         registerActions(scene);
-        scene.physicsEnabled = false;
-        //console.log("g",ground);
-        
-        //groundShadow.addMesh(tinyAirplane.vehicleData.visualMeshes[0]);
+        scene.physicsEnabled = false;//pause
         console.log("manager finished");
 
     }

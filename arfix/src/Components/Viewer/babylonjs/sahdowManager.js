@@ -32,8 +32,8 @@ export default function scene(shadowlight) {
         csmShadowGenerator.usePercentageCloserFiltering = true;
         csmShadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_HIGH;*/
         csmShadowGenerator.forceBackFacesOnly = true;
-        csmShadowGenerator.numCascades = 2;
-        csmShadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_LOW;
+        //csmShadowGenerator.numCascades = 2;
+        csmShadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
 
         csmShadowGenerator.lambda = 1;     //0 -full lin, 1 full log
         //csmShadowGenerator.shadowMaxZ = camera.maxZ;
