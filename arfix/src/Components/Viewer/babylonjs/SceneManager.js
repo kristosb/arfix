@@ -120,9 +120,8 @@ export default function canvas(canvas)  {
         camera.lockedTarget =  tinyAirplane.vehicleData.chassisMesh; 
         //console.log(tinyAirplane.vehicleData.chassisMesh);
         tinyAirplane.vehicleData.chassisMesh.setAbsolutePosition(new BABYLON.Vector3(60,8,100));
-        //buildShadows(camera, lights.sunLight,tinyAirplane.vehicleData.visualMeshes[0]);//camera, lights.sunLight, ground.cubes[1]);
         tinyAirplane.vehicleData.visualMeshes[0].receiveShadows = true;
-        //groundShadow.addMesh(tinyAirplane.vehicleData.visualMeshes[0]);
+        groundShadow.addMesh(tinyAirplane.vehicleData.visualMeshes[0]);
         console.log("airplane finished");
     }
 
@@ -168,26 +167,6 @@ export default function canvas(canvas)  {
         ambientlight.groundColor = new BABYLON.Color3(0, 0, 0);
         ambientlight.setEnabled(true);
         return {sunLight, ambientlight};
-    }
-    function buildShadows(camera, light, mesh){//camera, light1, mesh){
-        //console.log("box",light);
-        //camera.maxZ=1000;
-        engine.getCaps().maxVaryingVectors = 16;
-        //var light = new BABYLON.DirectionalLight("dir01", new BABYLON.Vector3(-1, -2, -1), scene);
-        //light.intensity = 3;
-        //light.position = new BABYLON.Vector3(0, 40, 0);
-        //light.direction =new BABYLON.Vector3(0, -2, 0);
-        //var torus = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
-        //torus.position = new BABYLON.Vector3(0, 10,0);
-        var shadowGenerator = new BABYLON.CascadedShadowGenerator(1024, light);
-        shadowGenerator.getShadowMap().renderList.push(mesh);
-        shadowGenerator.lambda = 1;     //0 -full lin, 1 full log
-        shadowGenerator.shadowMaxZ = camera.maxZ;
-        //shadowGenerator.shadowMaxZ = 50;
-        shadowGenerator.cascadeBlendPercentage = 0;
-        shadowGenerator.depthClamp = false;
-        shadowGenerator.splitFrustum();
-        return shadowGenerator;
     }
 
     function buildGravity() {
