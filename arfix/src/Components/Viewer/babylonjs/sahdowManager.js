@@ -1,5 +1,38 @@
 import * as BABYLON from 'babylonjs';
 
+/*export default function scene(shadowlight) {    
+    //var groundshadowGenerator = simpleShadowGenerator(shadowlight);
+    var groundshadowGenerator = cascadingShadowGenerator(shadowlight);
+
+    function ShadowGenerator(light, camera){
+        
+        //light.position = new BABYLON.Vector3(0, 1500, 0);
+        //light.diffuse = BABYLON.Color3.White();
+        //light.specular = new BABYLON.Color3(0.3, 0.3, 0.3);
+        //light.intensity = 1.0;
+
+        var shadowGeneratorDynamic = new BABYLON.ShadowGenerator(1024, light);
+        shadowGeneratorDynamic.usePercentageCloserFiltering = true;
+        shadowGeneratorDynamic.getShadowMap().renderList.push(torus);
+        return shadowGeneratorDynamic;
+    }
+    function updateOnce(){
+        //groundshadowGenerator.getShadowMap().refreshRate = BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+        //shadowlight.autoUpdateExtends = false;
+    }
+    function addMesh(mesh){
+        //groundshadowGenerator.getShadowMap().renderList.push(mesh);
+        //groundshadowGenerator.addShadowCaster(mesh);
+        //shadowGenerator.getShadowMap().renderList.push(torus);
+        //console.log("exist",mesh);
+        groundshadowGenerator.getShadowMap().renderList.push(mesh);
+    }
+    return {
+        updateOnce,
+        addMesh
+    }
+}*/
+
 export default function scene(shadowlight) {    
     //var groundshadowGenerator = simpleShadowGenerator(shadowlight);
     var groundshadowGenerator = cascadingShadowGenerator(shadowlight);
@@ -21,16 +54,16 @@ export default function scene(shadowlight) {
         light.specular = new BABYLON.Color3(0.3, 0.3, 0.3);
         //light.intensity = 1.0;
 
-        var csmShadowGenerator = new BABYLON.CascadedShadowGenerator(2048, light);
-        /*csmShadowGenerator.stabilizeCascades = true;
-        csmShadowGenerator.forceBackFacesOnly = true;
-        csmShadowGenerator.shadowMaxZ = 100;
-        csmShadowGenerator.autoCalcDepthBounds = true;
-        csmShadowGenerator.lambda = 0.5;
-        csmShadowGenerator.depthClamp = true;
-        csmShadowGenerator.penumbraDarkness = 0.8;
-        csmShadowGenerator.usePercentageCloserFiltering = true;
-        csmShadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_HIGH;*/
+        var csmShadowGenerator = new BABYLON.CascadedShadowGenerator(768, light);
+        //csmShadowGenerator.stabilizeCascades = true;
+        //csmShadowGenerator.forceBackFacesOnly = true;
+        //csmShadowGenerator.shadowMaxZ = 100;
+        //csmShadowGenerator.autoCalcDepthBounds = true;
+        //csmShadowGenerator.lambda = 0.5;
+        //csmShadowGenerator.depthClamp = true;
+        //csmShadowGenerator.penumbraDarkness = 0.8;
+        //csmShadowGenerator.usePercentageCloserFiltering = true;
+        //csmShadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_HIGH;
         csmShadowGenerator.forceBackFacesOnly = true;
         //csmShadowGenerator.numCascades = 2;
         csmShadowGenerator.filteringQuality = BABYLON.ShadowGenerator.QUALITY_MEDIUM;
@@ -63,18 +96,3 @@ export default function scene(shadowlight) {
 }
 
 
-
-/*var groundshadowGenerator = new BABYLON.ShadowGenerator(1024, shadowlight);
-groundshadowGenerator.getShadowMap().renderList.push(groundmesh);
-groundshadowGenerator.useBlurCloseExponentialShadowMap = true;
-//groundshadowGenerator.forceBackFacesOnly = true;
-//groundshadowGenerator.blurKernel = 32;
-//groundshadowGenerator.useKernelBlur = true;
-groundshadowGenerator.getShadowMap().refreshRate = BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE;*/
-//shadowlight.autoUpdateExtends = false;
-/*var g = new BABYLON.LightGizmo();
-g.light = shadowlight;
-var dlh = new DirectionalLightHelper(shadowlight, camera);
-window.setTimeout(() => {
-    scene.onAfterRenderObservable.add(() => dlh.buildLightHelper());
-}, 500);*/

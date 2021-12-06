@@ -1,12 +1,12 @@
 import * as BABYLON from "babylonjs";
 import { SkyMaterial } from "babylonjs-materials";
  /**    
- * Projects a point to a plane along a ray starting from the camera origin and directed towards the point. 
+ *  Simulates the sky with the sun 
  * @param {BABYLON.Scene} scene      
  * @param {BABYLON.Light} sunLight
  * @param {BABYLON.Light} ambientLight  
  * @param {BABYLON.Camera} followCam 
- * @param num moonCam      
+ * @param num size      
  */
 export default function skySim(scene, sunLight, ambientLight, followCam, size = 10000){
     var elapsed, now;
@@ -58,7 +58,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         wrap:true,
         faceUV: faceUV
     };
-    console.log("cloud",cloudOptions.width, cloudBoxSizeMult, size);
+    //console.log("cloud",cloudOptions.width, cloudBoxSizeMult, size);
     var cloudBox = BABYLON.MeshBuilder.CreateBox('box', cloudOptions, scene);
     cloudBox.material = cloudMaterial;
     cloudBox.position.y = 70;
@@ -72,13 +72,13 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     }
     function setLightDirection(){
         var dirNorm = new BABYLON.Vector3(0,0,0);
-        console.log("inc",skyboxMaterial.inclination);
+        //console.log("inc",skyboxMaterial.inclination);
         skyboxMaterial.useSunPosition = false;
         dirNorm.copyFrom(skyboxMaterial.sunPosition);
         //dirNorm.subtractInPlace(new BABYLON.Vector3(0,400,0));
-        console.log("dir",dirNorm);
+        //console.log("dir",dirNorm);
         dirNorm.normalize();
-        console.log("dirsub",dirNorm);
+        //console.log("dirsub",dirNorm);
         ambientLight.direction.copyFromFloats(dirNorm.x, dirNorm.y, dirNorm.z);//copyFrom(dirNorm);
         sunLight.direction.copyFromFloats(-dirNorm.x, -dirNorm.y, -dirNorm.z);
         ambientLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[2,0.1]);
@@ -101,7 +101,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         skyboxMaterial.inclination += interval;
         if (skyboxMaterial.inclination >= limit) skyboxMaterial.inclination = limit;
         if (skyboxMaterial.inclination <= -limit) skyboxMaterial.inclination = -limit;
-        console.log(skyboxMaterial.inclination);
+        //console.log(skyboxMaterial.inclination);
         move();
         setLightDirection();
     }
@@ -130,17 +130,21 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     }
     
     function update(time) {
-        now = time;
+       /* now = time;
         elapsed = now - then;
         if (elapsed > interval){
             move();
             //console.log(time);
             then = now;
-        }
+        }*/
+    }
+    function getSkyMesh(){
+        return skybox;
     }
     return {
         update,
         transitionSunInclination,
-        makeClouds
+        makeClouds,
+        getSkyMesh
     }
 }
