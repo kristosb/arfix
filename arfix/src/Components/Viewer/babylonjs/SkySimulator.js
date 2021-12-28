@@ -13,9 +13,9 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     var then = 0;
     var interval= 0.05;
 
-    ambientLight.intensity = 2;
-    ambientLight.diffuse = new BABYLON.Color3(0.96, 0.97, 0.93);
-	ambientLight.groundColor = new BABYLON.Color3(0, 0, 0);
+    //ambientLight.intensity = 2;
+    //ambientLight.diffuse = new BABYLON.Color3(0.96, 0.97, 0.93);
+	//ambientLight.groundColor = new BABYLON.Color3(0, 0, 0);
     //sunLight.intensity = 2;
     
 	// Sky material
@@ -81,10 +81,10 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         //console.log("dirsub",dirNorm);
         ambientLight.direction.copyFromFloats(dirNorm.x, dirNorm.y, dirNorm.z);//copyFrom(dirNorm);
         sunLight.direction.copyFromFloats(-dirNorm.x, -dirNorm.y, -dirNorm.z);
-        ambientLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[2,0.1]);
-        sunLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[1,5]);;
+        ambientLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[0.8,0.2]);
+        sunLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[2.3,1.4]);;
         //if(dirNorm.y<0) ambientLight.intensity = 1; else ambientLight.intensity = 2;
-        //console.log(ambientlight.direction);
+        console.log(sunLight.direction);
     }
     // evening  luminance =0.1 and decrease turbo = 5
 	function move(){

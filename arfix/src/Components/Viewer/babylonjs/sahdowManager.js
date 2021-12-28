@@ -49,9 +49,9 @@ export default function scene(shadowlight) {
     }
     function cascadingShadowGenerator(light, camera){
         
-        light.position = new BABYLON.Vector3(0, 1500, 0);
-        light.diffuse = BABYLON.Color3.White();
-        light.specular = new BABYLON.Color3(0.3, 0.3, 0.3);
+        light.position = new BABYLON.Vector3(0, 150, 0); //1500
+        //light.diffuse = BABYLON.Color3.White();
+        //light.specular = new BABYLON.Color3(0.3, 0.3, 0.3);
         //light.intensity = 1.0;
 
         var csmShadowGenerator = new BABYLON.CascadedShadowGenerator(768, light);

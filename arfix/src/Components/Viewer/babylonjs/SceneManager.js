@@ -65,7 +65,7 @@ export default function canvas(canvas)  {
     sky.makeClouds(worldSize);
 
     camera.maxZ = worldSize*1.4;
-    //const ocean = new OceanSim(scene, worldSize);
+    var ocean = null;//new OceanSim(scene, worldSize);
     //ocean.setPosition(new BABYLON.Vector3(0,1.4,0));
     //ocean.addReflected(sky.getSkyMesh());
 
@@ -83,16 +83,19 @@ export default function canvas(canvas)  {
         hud: null 
     };
     var assetsManager = new BABYLON.AssetsManager(scene);
-    var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_1_opt.glb");
+    var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_land_only.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
     meshWorldTask.onSuccess = function (task) {   
         var meshAll = task.loadedMeshes;
         meshAll[0].removeChild(meshAll[1]);
         const ground = meshAll[1];
-
-        ground.setParent(null);   
+        
+        ground.setParent(null);  
+        meshAll[0].dispose(); 
         //ground.position.y -= 40; 
         ground.scaling = ground.scaling.multiplyByFloats(8,8,8); 
+        
+        console.log("scaling", ground.scaling);
         /*ground.physicsImpostor = new BABYLON.PhysicsImpostor(
             ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.3 }, scene
         );*/
@@ -100,7 +103,7 @@ export default function canvas(canvas)  {
         material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5)
         material.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05)      
         ground.material= material;*/  
-        meshAll[0].dispose();
+        //meshAll[0].dispose();
         
         //optimization
         ground.material.freeze();
@@ -108,7 +111,13 @@ export default function canvas(canvas)  {
         ground.doNotSyncBoundingInfo = true;
         groundShadow.addMesh(ground);
         ground.receiveShadows = true;
- 
+        ocean = new OceanSim(scene, worldSize);
+        
+        //groundShadow.addMesh(ocean.getMesh());
+        /*var water = BABYLON.MeshBuilder.CreateGround("ground", {width: worldSize, height: worldSize, subdivisions:64}, scene);
+        water.receiveShadows = true;
+        groundShadow.addMesh(water);*/
+        //ground.scaling = ground.scaling.multiplyByFloats(1,80,1);
         console.log("world finished");
         
     }
@@ -130,6 +139,8 @@ export default function canvas(canvas)  {
 
     assetsManager.onFinish= function (task){
         registerActions(scene);
+        
+        //ground.scaling.y = -ground.scaling.x;
         //scene.physicsEnabled = false;//pause
         console.log("manager finished");
 
@@ -151,21 +162,24 @@ export default function canvas(canvas)  {
     function buildLight(scene){
         // Light
         //var sunLight = new BABYLON.PointLight("sunPointLight", new BABYLON.Vector3(0, 1, 0), scene);
-        var sunLight = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+
+        var sunLight = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0.7, -0.3, 0.7), scene);
         sunLight.position = new BABYLON.Vector3(50,100,100);//new BABYLON.Vector3(0, 50, 0);
-        sunLight.intensity = 1;
+        sunLight.intensity = 2.3;
         //sunLight.autoCalcShadowZBounds
         //sunLight.shadowMinZ = 0;
         //sunLight.shadowMaxZ = 30;
         sunLight.setEnabled(true);
         
 
-        var ambientlight = new BABYLON.HemisphericLight("ambient", new BABYLON.Vector3(0, 1, 0), scene);
+        var ambientlight = new BABYLON.HemisphericLight("ambient", new BABYLON.Vector3(-0.7, 0.3, -0.7), scene);
         ambientlight.position = new BABYLON.Vector3(0, 55, 5);
-        ambientlight.intensity =2;
+        ambientlight.intensity =0.8;
         ambientlight.diffuse = new BABYLON.Color3(0.96, 0.97, 0.93);
-        ambientlight.groundColor = new BABYLON.Color3(0, 0, 0);
+        ambientlight.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
         ambientlight.setEnabled(true);
+        //ambientlight.parent = sunLight;
+
         return {sunLight, ambientlight};
     }
 
@@ -234,7 +248,6 @@ export default function canvas(canvas)  {
     };*/
     function registerActions(scene){
         // Keyboard events
-
         scene.actionManager = new BABYLON.ActionManager(scene);
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
             inputMap[evt.sourceEvent.key].type=evt.sourceEvent.type === "keydown";// evt.sourceEvent.type == "keydown";//{key: evt.sourceEvent.type == "keydown", trigger:true};// +(evt.sourceEvent.type == "keydown")+(inputMap[evt.sourceEvent.key]==1);//
@@ -250,100 +263,42 @@ export default function canvas(canvas)  {
 
     }
     function actions(){
-        //scene.onBeforePhysicsObservable.add( () => {
-        //scene.onBeforeRenderObservable.add(() => {
-            if(tinyAirplane.vehicle!==null){
+        if(tinyAirplane.vehicle!==null){
+            keyAction("q", ()=>tinyAirplane.airplane.roll = -1);
+            keyAction("e", ()=>tinyAirplane.airplane.roll = 1);
+            keyAction("a", ()=>{
+                tinyAirplane.airplane.yaw = 1;
+                tinyAirplane.vehicle.direction = 0.5;
+            });
+            keyAction("d", ()=>{
+                tinyAirplane.airplane.yaw = -1;
+                tinyAirplane.vehicle.direction = -0.5;
+            });
+            keyAction("w", ()=>tinyAirplane.airplane.pitch = 1);
+            keyAction("s", ()=>tinyAirplane.airplane.pitch = -1);
+            keyAction("m", ()=> {
+                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower + 0.005;
+                tinyAirplane.airplane.speedModifier = 0.12; //0.12
+                tinyAirplane.vehicle.acceleration = 40;
+            });
+            keyAction("n", ()=> {
+                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower - 0.005;
+                tinyAirplane.vehicle.acceleration = -20;
+            });
+            keyActionTrig("b", ()=> tinyAirplane.vehicle.breakingForce = 10);
+        }
 
-            /*if (inputMap["q"].type) {
-                tinyAirplane.airplane.roll = -1;
-            }
-            if (inputMap["e"].type) {
-                tinyAirplane.airplane.roll = 1;
-            }
-            if (inputMap["a"].type) {
-                tinyAirplane.airplane.yaw = 1;
-                tinyAirplane.vehicle.direction = 0.5;
-            }
-            if (inputMap["d"].type) {
-                tinyAirplane.airplane.yaw = -1;
-                tinyAirplane.vehicle.direction = -0.5;
-            }
-            if (inputMap["w"].type) {
-                tinyAirplane.airplane.pitch = 1;
-            }
-            if (inputMap["s"].type) {
-                tinyAirplane.airplane.pitch = -1;
-            }
-            if (inputMap["m"].type) {
-                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower + 0.005;
-                tinyAirplane.airplane.speedModifier = 0.12; //0.12
-                tinyAirplane.vehicle.acceleration = 40;
-            }
-            if (inputMap["n"].type) {
-                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower - 0.005;
-                tinyAirplane.vehicle.acceleration = -20;
-            }
-            
-            if (inputMap["b"].type) {
-                tinyAirplane.vehicle.breakingForce = 10;
-            }*/
-            keyAction("q", x=>tinyAirplane.airplane.roll = -1);
-            keyAction("e", x=>tinyAirplane.airplane.roll = 1);
-            keyAction("a", x=>{
-                tinyAirplane.airplane.yaw = 1;
-                tinyAirplane.vehicle.direction = 0.5;
-            });
-            keyAction("d", x=>{
-                tinyAirplane.airplane.yaw = -1;
-                tinyAirplane.vehicle.direction = -0.5;
-            });
-            keyAction("w", x=>tinyAirplane.airplane.pitch = 1);
-            keyAction("s", x=>tinyAirplane.airplane.pitch = -1);
-            keyAction("m", x=> {
-                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower + 0.005;
-                tinyAirplane.airplane.speedModifier = 0.12; //0.12
-                tinyAirplane.vehicle.acceleration = 40;
-            });
-            keyAction("n", x=> {
-                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower - 0.005;
-                tinyAirplane.vehicle.acceleration = -20;
-            });
-            keyActionTrig("b", x=> tinyAirplane.vehicle.breakingForce = 10);
-            }
-            /*if (inputMap["i"].type) {
-                //showImpostors(scene);
-            }*/
-            /*if (inputMap["o"].type) {
-                scene.debugLayer.show();
-            }
-            if (inputMap["1"].type) {
-                sky.transitionSunInclination(0.025);
-                groundShadow.updateOnce();
-            }
-            if (inputMap["2"].type) {
-                sky.transitionSunInclination(-0.025);
-                groundShadow.updateOnce();
-            }
-            if (inputMap["p"].type) {
-                if(inputMap["p"].keyState == "up") {
-                    inputMap["p"].keyState = "down"; 
-                    scene.physicsEnabled = !scene.physicsEnabled;
-                }
-                else 
-                    inputMap["p"].keyState = "hold";
-                
-            }*/
-            keyActionTrig("o", x=> scene.debugLayer.show());
-            keyActionTrig("1", x=> {
-                sky.transitionSunInclination(0.025);
-                groundShadow.updateOnce();
-            });
-            keyActionTrig("2", x=> {
-                sky.transitionSunInclination(-0.025);
-                groundShadow.updateOnce();
-            });
-            keyActionTrig("p", x=> scene.physicsEnabled = !scene.physicsEnabled);
-            keyActionTrig("k", x=> console.log("down"));//, x=>console.log("hold"));
+        keyActionTrig("o", ()=> scene.debugLayer.show());
+        keyActionTrig("1", ()=> {
+            sky.transitionSunInclination(0.025);
+            groundShadow.updateOnce();
+        });
+        keyActionTrig("2",()=> {
+            sky.transitionSunInclination(-0.025);
+            groundShadow.updateOnce();
+        });
+        keyActionTrig("p", ()=> scene.physicsEnabled = !scene.physicsEnabled);
+        //keyActionTrig("k", ()=> console.log("down"));//, x=>console.log("hold"));
             
     }
 
