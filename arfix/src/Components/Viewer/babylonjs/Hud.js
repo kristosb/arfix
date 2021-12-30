@@ -6,27 +6,7 @@ import * as HUD2D from './HudControls';
 function isMobileCheck() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
-/*class orientationData {
-    //sinulate on desktop or real IMU on mobile
-    constructor(forceMobile =false){
-        this.isMobile = isMobileCheck() || forceMobile;
-        this.flightData = null
-        if(this.isMobile) this.flightData = new IMU.imu();
-        else this.flightData = new HUD2D.airplaneTelemetry();
-    }
-    get yaw(){
-        return this.flightData.yaw;
-    }
-    get pitch(){
-        return this.flightData.pitch;
-    }
-    get roll(){
-        return this.flightData.roll;
-    }
-    next(){
-        if(!this.isMobile) this.flightData.next();
-    }
-}*/
+
 export default function hudPanel(scene,canvas,planeSize = 0.5){
 
     //var size = 600;
@@ -101,73 +81,11 @@ export default function hudPanel(scene,canvas,planeSize = 0.5){
     //material.disableLighting = true;
     var hudMesh = BABYLON.MeshBuilder.CreatePlane("hudPlane", {size:1.6});
     hudMesh.material = material;
-    //hudMesh.scaling.x = 0.1;
-    //hudMesh.scaling.y = 0.1;
-    //hudMesh.position = new BABYLON.Vector3(0,0,-0.5);
-    
-    
-    //var hudCanvas = document.createElement('canvas');
-    //hudCanvas.width = screenDimensions.width/2; //keep it square assuming default 300x150
-    //hudCanvas.height = screenDimensions.height;
-    /*var hudBitmap = window.drawCanvas.getContext("2d");//hudCanvas.getContext('2d');
-    hudBitmap.lineWidth = 2;
-    //flipHoriz(hudBitmap);   
-    hudBitmap.fillStyle = style;
-    hudBitmap.strokeStyle = style;
-    hudBitmap.globalAlpha = 0.75;
-    var hudElements = {
-        info: new HUD2D.hudSimpleText(hudBitmap, window.drawCanvas.width/2 -30, window.drawCanvas.height - 5,16),
-        border: new HUD2D.hudBorder(hudBitmap,window.drawCanvas.width,window.drawCanvas.height),
-        crosshair: new HUD2D.crosshair(hudBitmap,window.drawCanvas.width,window.drawCanvas.height),
-        horizon: new HUD2D.horizon(hudBitmap,window.drawCanvas.width,window.drawCanvas.height),
-        compass: new HUD2D.compass(hudBitmap,window.drawCanvas.width,window.drawCanvas.height),
-        pitchLader: new HUD2D.pitchLader(hudBitmap,window.drawCanvas.width,window.drawCanvas.height),
-        //msgs: new HUD2D.hudWrappedText(hudBitmap,10,60,12)
-    };*/
-    //hudElements.msgs.txt = 'Smash 11, you have traffic 12 o\'clock, less than five miles. 727 descending to one four thousand.\n Copy. Smash is radar contact tally-ho.';
-    //hudElements.border.lineWidth = 5;
-    /*hudElements.crosshair.lineWidth = 2;
-    hudElements.compass.lineWidth = 2;
-    hudElements.pitchLader.lineWidth = 2;*/
-    //Object.values(hudElements).forEach(val => {val.draw()});
- 
 
-    
-
-    //hudMesh.translate(new BABYLON.Vector3.Up(),1);
-    //var hudTexture = new THREE.Texture(hudCanvas);
-    //hudTexture.name = "hudCanvas";
-    //hudTexture.needsUpdate = true;
-    //var material = new THREE.MeshBasicMaterial({map: hudTexture} );//{color: 0xffff00, side: THREE.DoubleSide} );
-    //material.transparent = true;
-    //var planeGeometry = new THREE.PlaneGeometry( planeSize, planeSize );
-    //var plane = new THREE.Mesh( planeGeometry, material );
-    //plane.name = "hudPlane";
-    //plane.position.set(0,0,-0.15);
-    //scene.add( plane );
-
-
-    //var movePoint = new HUD2D.bouncer(screenDimensions.width,screenDimensions.height);
-    //var flightData = new orientationData(false);
     texture.update();
     function draw() {
         ctx.clearRect(0,0,window.drawCanvas.width,window.drawCanvas.height );
         
-        // display time
-        //hudElements.info.text = "hello";//HUD2D.getTimeString();
-
-        // simulate crosshair movement and display
-        //movePoint.nextPoint();
-        //hudElements.crosshair.x = movePoint.x;
-        //hudElements.crosshair.y = movePoint.y;
-
-        // simulate incomming data
-        //flightData.next();
-
-        // simulate compass rotation
-        //hudElements.compass.angle = flightData.yaw;
-        //hudElements.pitchLader.rot = flightData.roll;
-        //hudElements.pitchLader.angle = flightData.pitch;
         hudElements.speed.text = speed;
         hudElements.altitude.text = altitude;
         hudElements.power.text = power;

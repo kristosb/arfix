@@ -67,6 +67,8 @@ export default class Airplane {
      */
     constructor(scene, chassis, controls){
         this.scene = scene;
+        if(!chassis) console.error("chassis mesh error");
+        if(!controls) console.error("controls data error");
         //this.animationGroup = null;
         this._lift = 50;
         this._roll = 0;

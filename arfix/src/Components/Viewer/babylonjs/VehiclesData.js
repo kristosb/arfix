@@ -268,7 +268,7 @@ export class AirplaneWW2 extends VehicleData{
      */
      constructor(scene, meshAll){
         super(scene);
-        //console.log(meshAll);
+        if(!meshAll) console.error("airplane modlel mesh error");
         meshAll[0].translate(new BABYLON.Vector3.Up(),0.15,BABYLON.Space.WORLD);
         const massOffset = new BABYLON.Vector3(0, 0.2, 0.65);
         const mass = 50;

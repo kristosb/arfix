@@ -303,7 +303,7 @@ class ProceduralHeightMap{
         var sdfRes = gmat.diffuseTexture.getSize().width;
         var sdfTexture = this.generateDistanceField(sdfRes, gmat.diffuseTexture, 24, scene);
         let flowHeight = this.distortionFlow( 0.5, sdfRes, scene);
-        var water = BABYLON.MeshBuilder.CreateGround("waterMesh", {width: wsize, height: wsize, subdivisions:8}, scene);
+        var water = BABYLON.MeshBuilder.CreateGround("waterMesh", {width: wsize, height: wsize, subdivisions:4}, scene);
         //water.convertToFlatShadedMesh();
         water.material = new CustomMaterial('waterMaterial', scene);
         water.material.backFaceCulling = false;

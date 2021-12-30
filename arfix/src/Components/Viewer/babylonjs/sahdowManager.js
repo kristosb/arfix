@@ -54,7 +54,7 @@ export default function scene(shadowlight) {
         //light.specular = new BABYLON.Color3(0.3, 0.3, 0.3);
         //light.intensity = 1.0;
 
-        var csmShadowGenerator = new BABYLON.CascadedShadowGenerator(768, light);
+        var csmShadowGenerator = new BABYLON.CascadedShadowGenerator(1024, light);
         //csmShadowGenerator.stabilizeCascades = true;
         //csmShadowGenerator.forceBackFacesOnly = true;
         //csmShadowGenerator.shadowMaxZ = 100;

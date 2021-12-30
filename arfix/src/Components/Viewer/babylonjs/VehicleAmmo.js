@@ -17,6 +17,7 @@ BABYLON.Mesh.prototype.getAbsoluteSize = function() {
 
 export default class VehicleAmmo{
     constructor(scene, carData){
+        if(!carData) console.error("vehicle data error");
         this.scene = scene;
         this.vehicle = null;
         this.carData = carData;

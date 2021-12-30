@@ -1,5 +1,4 @@
 //import * as BABYLON from "@babylonjs/core";
-
 import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
 //import 'babylonjs-materials';
@@ -21,11 +20,7 @@ import SkySim from './SkySimulator.js';
 import OceanSim from './OceanSimulator.js';
 import ShadowManager from './sahdowManager';
 import Inspector from './instrumentation';
-//import { SkyMaterial } from 'babylonjs-materials/sky/skyMaterial';
-/*var addShadows = function(mesh){
-    mesh.receiveShadows = true;
-    shadowGenerator.addShadowCaster(mesh);
-}*/
+
 function createPhysicsImpostor(scene, entity, impostor, options, reparent) {
     if (entity == null) return;
     entity.checkCollisions = false;
@@ -53,8 +48,8 @@ export default function canvas(canvas)  {
     engine.loadingUIText = "Loading world and airplane...";
     engine.loadingUIBackgroundColor = "Purple";
     const scene = buildScene();
-    const debugUI = null;//new Inspector(engine);
-
+    //const debugUI = null;//new Inspector(engine);
+    var sceneLoaded = false;
     const physics = buildGravity();
     //const physicsViewer = new BABYLON.PhysicsViewer(scene);
     const camera = followCameraCreate();//buildCamera(screenDimensions);//
@@ -66,9 +61,6 @@ export default function canvas(canvas)  {
 
     camera.maxZ = worldSize*1.4;
     var ocean = null;//new OceanSim(scene, worldSize);
-    //ocean.setPosition(new BABYLON.Vector3(0,1.4,0));
-    //ocean.addReflected(sky.getSkyMesh());
-
     var ground = null;
     var groundShadow = null;
     groundShadow = new ShadowManager(lights.sunLight);
@@ -88,22 +80,13 @@ export default function canvas(canvas)  {
     meshWorldTask.onSuccess = function (task) {   
         var meshAll = task.loadedMeshes;
         meshAll[0].removeChild(meshAll[1]);
-        const ground = meshAll[1];
-        
+        const ground = meshAll[1]; 
         ground.setParent(null);  
         meshAll[0].dispose(); 
-        //ground.position.y -= 40; 
         ground.scaling = ground.scaling.multiplyByFloats(8,8,8); 
-        
-        console.log("scaling", ground.scaling);
-        /*ground.physicsImpostor = new BABYLON.PhysicsImpostor(
+        ground.physicsImpostor = new BABYLON.PhysicsImpostor(
             ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.3 }, scene
-        );*/
-        /*let material = new BABYLON.StandardMaterial('standard', scene)
-        material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5)
-        material.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05)      
-        ground.material= material;*/  
-        //meshAll[0].dispose();
+        );
         
         //optimization
         ground.material.freeze();
@@ -111,13 +94,9 @@ export default function canvas(canvas)  {
         ground.doNotSyncBoundingInfo = true;
         groundShadow.addMesh(ground);
         ground.receiveShadows = true;
+
+        registerActions(scene);
         ocean = new OceanSim(scene, worldSize);
-        
-        //groundShadow.addMesh(ocean.getMesh());
-        /*var water = BABYLON.MeshBuilder.CreateGround("ground", {width: worldSize, height: worldSize, subdivisions:64}, scene);
-        water.receiveShadows = true;
-        groundShadow.addMesh(water);*/
-        //ground.scaling = ground.scaling.multiplyByFloats(1,80,1);
         console.log("world finished");
         
     }
@@ -138,15 +117,11 @@ export default function canvas(canvas)  {
     }
 
     assetsManager.onFinish= function (task){
-        registerActions(scene);
-        
-        //ground.scaling.y = -ground.scaling.x;
-        //scene.physicsEnabled = false;//pause
+        sceneLoaded = true;
         console.log("manager finished");
 
     }
     assetsManager.load();
-    //buildShadows(camera);
     //showAxis(5,scene);
 
 
@@ -161,16 +136,10 @@ export default function canvas(canvas)  {
     }
     function buildLight(scene){
         // Light
-        //var sunLight = new BABYLON.PointLight("sunPointLight", new BABYLON.Vector3(0, 1, 0), scene);
-
         var sunLight = new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0.7, -0.3, 0.7), scene);
         sunLight.position = new BABYLON.Vector3(50,100,100);//new BABYLON.Vector3(0, 50, 0);
         sunLight.intensity = 2.3;
-        //sunLight.autoCalcShadowZBounds
-        //sunLight.shadowMinZ = 0;
-        //sunLight.shadowMaxZ = 30;
-        sunLight.setEnabled(true);
-        
+        sunLight.setEnabled(true);   
 
         var ambientlight = new BABYLON.HemisphericLight("ambient", new BABYLON.Vector3(-0.7, 0.3, -0.7), scene);
         ambientlight.position = new BABYLON.Vector3(0, 55, 5);
@@ -178,7 +147,6 @@ export default function canvas(canvas)  {
         ambientlight.diffuse = new BABYLON.Color3(0.96, 0.97, 0.93);
         ambientlight.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
         ambientlight.setEnabled(true);
-        //ambientlight.parent = sunLight;
 
         return {sunLight, ambientlight};
     }
@@ -199,17 +167,6 @@ export default function canvas(canvas)  {
         return physicsPlugin;
     }
 
-    function buildCamera({ width, height }) {
-        const aspectRatio = width / height;
-        // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
-        const camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(-1,2,-1), scene);//BABYLON.Vector3(-120,20,-70)
-
-        camera.wheelDeltaPercentage = 0.01;
-        // Attach the camera to the canvas
-        camera.attachControl(canvas, false);
-
-        return camera;
-    }
     function followCameraCreate(mesh){
         var followCamera = new BABYLON.FollowCamera("followcamera", new BABYLON.Vector3(0,0,-100), scene);
         followCamera.heightOffset = 1;
@@ -250,16 +207,11 @@ export default function canvas(canvas)  {
         // Keyboard events
         scene.actionManager = new BABYLON.ActionManager(scene);
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
-            inputMap[evt.sourceEvent.key].type=evt.sourceEvent.type === "keydown";// evt.sourceEvent.type == "keydown";//{key: evt.sourceEvent.type == "keydown", trigger:true};// +(evt.sourceEvent.type == "keydown")+(inputMap[evt.sourceEvent.key]==1);//
+            if(inputMap[evt.sourceEvent.key]) inputMap[evt.sourceEvent.key].type=evt.sourceEvent.type === "keydown";// evt.sourceEvent.type == "keydown";//{key: evt.sourceEvent.type == "keydown", trigger:true};// +(evt.sourceEvent.type == "keydown")+(inputMap[evt.sourceEvent.key]==1);//
         }));
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
-            inputMap[evt.sourceEvent.key] = {type:false,keyState:"up"};//+(evt.sourceEvent.type == "keydown");//-(inputMap[evt.sourceEvent.key]==1);//evt.sourceEvent.type == "keydown";//{key: evt.sourceEvent.type == "keydown", trigger:true};
+            if(inputMap[evt.sourceEvent.key]) inputMap[evt.sourceEvent.key] = {type:false,keyState:"up"};//+(evt.sourceEvent.type == "keydown");//-(inputMap[evt.sourceEvent.key]==1);//evt.sourceEvent.type == "keydown";//{key: evt.sourceEvent.type == "keydown", trigger:true};
         }));
-        
-        //);
-        /*scene.onBeforeRenderObservable.add(() => {
-            actions();
-        });*/
 
     }
     function actions(){
@@ -330,25 +282,28 @@ export default function canvas(canvas)  {
     }
 
     function hudUpdate(){
-        if(tinyAirplane.airplane!==null){ 
-            const elapsedTime = clock.getElapsedTime();
-            tinyAirplane.hud.setRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.y),
-                                                -BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.x),
-                                                BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.z)));
-            tinyAirplane.hud.setSpeed(tinyAirplane.airplane.velocity.z);
-            tinyAirplane.hud.setPower(tinyAirplane.airplane.enginePower);
-            tinyAirplane.hud.setAltitude(tinyAirplane.airplane.collision.position.y);
-            tinyAirplane.hud.update(elapsedTime);
-            }
+        //if(tinyAirplane.airplane!==null){ 
+        if(!tinyAirplane.airplane) console.error("airplane modlel mesh error");
+        const elapsedTime = clock.getElapsedTime();
+        tinyAirplane.hud.setRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.y),
+                                            -BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.x),
+                                            BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.z)));
+        tinyAirplane.hud.setSpeed(tinyAirplane.airplane.velocity.z);
+        tinyAirplane.hud.setPower(tinyAirplane.airplane.enginePower);
+        tinyAirplane.hud.setAltitude(tinyAirplane.airplane.collision.position.y);
+        tinyAirplane.hud.update(elapsedTime);
+            //}
     }
 
     function animate(){
         //assetsManager.onFinish = function (tasks) {
             engine.runRenderLoop(function () {
-                actions();
-                hudUpdate();
-                if (debugUI) debugUI.update();
-                scene.render();
+                if (sceneLoaded){
+                    actions();
+                    hudUpdate();
+                    //if (debugUI) debugUI.update();
+                    scene.render();
+                }
             });
         //}
     }
