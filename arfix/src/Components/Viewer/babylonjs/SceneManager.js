@@ -54,6 +54,7 @@ export default function canvas(canvas)  {
     //const physicsViewer = new BABYLON.PhysicsViewer(scene);
     const camera = followCameraCreate();//buildCamera(screenDimensions);//
     const lights = buildLight(scene);
+
     const worldSize = 800;
 
     const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, worldSize);
@@ -74,9 +75,11 @@ export default function canvas(canvas)  {
         airplane:null, 
         hud: null 
     };
+    //var nimitz = null;
     var assetsManager = new BABYLON.AssetsManager(scene);
-    var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_land_only.glb");
+    var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_2.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
+    //var meshCarrierTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "nimitz_single_mesh.glb");
     meshWorldTask.onSuccess = function (task) {   
         var meshAll = task.loadedMeshes;
         meshAll[0].removeChild(meshAll[1]);
@@ -84,6 +87,7 @@ export default function canvas(canvas)  {
         ground.setParent(null);  
         meshAll[0].dispose(); 
         ground.scaling = ground.scaling.multiplyByFloats(8,8,8); 
+        ground.position.y = -1.2;
         ground.physicsImpostor = new BABYLON.PhysicsImpostor(
             ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.3 }, scene
         );
@@ -95,8 +99,7 @@ export default function canvas(canvas)  {
         groundShadow.addMesh(ground);
         ground.receiveShadows = true;
 
-        registerActions(scene);
-        ocean = new OceanSim(scene, worldSize);
+
         console.log("world finished");
         
     }
@@ -115,15 +118,33 @@ export default function canvas(canvas)  {
         tinyAirplane.vehicleData.visualMeshes[0].material.freeze();
         console.log("airplane finished");
     }
-
+    /*meshCarrierTask.onSuccess = function (task) {
+        console.log("nimitz",task.loadedMeshes);
+        //nimitz = task.loadedMeshes[0];
+        //nimitz.scaling = nimitz.scaling.multiplyByFloats(0.1,0.1,0.1); 
+        //nimitz.rotate(BABYLON.Vector3.Up(),Math.PI/2);
+        task.loadedMeshes[0].position = new BABYLON.Vector3(100,5.3,200);
+        //nimitz.bakeCurrentTransformIntoVertices(true);
+        nimitzAnimCreate(scene, task.loadedMeshes[1]);
+        console.log("carrier finished");
+    }*/
     assetsManager.onFinish= function (task){
+        registerActions(scene);
+        ocean = new OceanSim(scene, worldSize);
+        //nimitzAnimCreate(scene, nimitz);
         sceneLoaded = true;
         console.log("manager finished");
-
     }
     assetsManager.load();
+    
     //showAxis(5,scene);
-
+    /*async function nimitzAnimCreate(scene, nimitz ){
+    var nimitzAnim = await BABYLON.Animation.ParseFromACEFileAsync(process.env.PUBLIC_URL+"/assets/nimitz_anim.json").then((x)=>{
+        console.log("anim", x);
+        nimitz.animations = x;
+        scene.beginAnimation(nimitz, 0, 100, true);
+    });
+    }*/
 
     function buildScene() {
         
@@ -318,3 +339,27 @@ export default function canvas(canvas)  {
         animate
     }
 }
+
+// temporary fix for loading animations
+BABYLON.Animation.ParseFromACEFileAsync = function(url) {
+    return new Promise((resolve, reject) => {
+        var request = new BABYLON.WebRequest();
+        request.addEventListener("readystatechange", () => {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    let animations = JSON.parse(request.responseText).animations;
+                    const parsedAnimations = [];
+                     for (const animation of animations) {
+                        parsedAnimations.push(BABYLON.Animation.Parse(animation));
+                    }
+                    resolve(parsedAnimations);
+                } else {
+                    reject("Unable to load the animations");
+                }
+            }
+        });
+
+        request.open("GET", url);
+        request.send();
+    });
+};

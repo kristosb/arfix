@@ -60,7 +60,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         faceUV: faceUV
     };
     //console.log("cloud",cloudOptions.width, cloudBoxSizeMult, size);
-    var cloudBox = BABYLON.MeshBuilder.CreateBox('box', cloudOptions, scene);
+    var cloudBox = BABYLON.MeshBuilder.CreateBox('farCloudsBox', cloudOptions, scene);
     cloudBox.material = cloudMaterial;
     cloudBox.position.y = 70;
     transitionSunInclination(0);

@@ -97,7 +97,7 @@ function createWheelMesh(scene, diameter, width, position){
 
 
 
-
+/*
 export class AirplaneChassis extends VehicleData{
     constructor(scene){
         super(scene);
@@ -148,10 +148,7 @@ export class AirplaneChassis extends VehicleData{
         var isColiderVisible = true;
         chassis.isVisible = true;
         
-        /*coliderMeshes.forEach(cm=>{
-            chassis.addChild(cm);
-            cm.isVisible = isColiderVisible;
-        });*/
+
         //add all meshes to chassis
         //visualMeshes.forEach(vm=>{chassis.addChild(vm)});
         //createPhysicsImpostor(this.scene, collisionMesh, BABYLON.PhysicsImpostor.NoImpostor, { mass: 0, friction: 1,restitution:0.1}, true);
@@ -174,11 +171,7 @@ export class AirplaneChassis extends VehicleData{
 
 
 export class AirplaneFromMesh extends VehicleData{
-    /**    
-     * Projects a point to a plane along a ray starting from the camera origin and directed towards the point. 
-     * @param {BABYLON.Scene} scene      
-     * @param {[BABYLON.Mesh]} meshAll
-     */
+
      constructor(scene, meshAll){
         super(scene);
         //console.log(meshAll);
@@ -259,7 +252,7 @@ export class AirplaneFromMesh extends VehicleData{
     
 
 }
-
+*/
 export class AirplaneWW2 extends VehicleData{
     /**    
      * Projects a point to a plane along a ray starting from the camera origin and directed towards the point. 
