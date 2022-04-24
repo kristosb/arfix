@@ -269,8 +269,23 @@ import { CustomMaterial } from "babylonjs-materials";
 }*/
 
 export default function scene(scene, size = 1024) {
+    var camWaterMask = maskProjectionCam(scene,size);
+    var gmat = createMaskMaterial(scene, camWaterMask);
+    var ocean = null;
+    const checkDepthMapCreated = () => {
+        const ok = gmat.diffuseTexture._currentRefreshId !== -1;
+        if (!ok) {
+            window.setTimeout(checkDepthMapCreated, 10);
+        } else {
+            //var ocean = new BumpWaves(wsize, scene, gmat);
+            ocean = new ProceduralHeightMap(size, scene, gmat);
+        }
+    };
 
-    var ocean = new ProceduralHeightMap(size, scene);
+    checkDepthMapCreated();
+
+
+    //var ocean = new ProceduralHeightMap(size, scene, gmat);
     function update(){
 
     }
@@ -291,11 +306,10 @@ export default function scene(scene, size = 1024) {
 
 class ProceduralHeightMap{
 
-    constructor(wsize, scene){
-        //mesh.scaling.y = 0.0;  //squize mesh height to fit in ortho cam view
-        var camWaterMask = maskProjectionCam(scene,wsize);
-        var gmat = createMaskMaterial(scene, camWaterMask);
-        //gmat.checkReadyOnlyOnce(x=>mesh.scaling.y = mesh.scaling.x);
+    constructor(wsize, scene, gmat){
+
+
+
 
         let detail = 64;
         let res = 512;
