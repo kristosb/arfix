@@ -26,14 +26,17 @@ export default class BattleShip {
         this.entityManager = new YUKA.EntityManager();
         this.time = new YUKA.Time();
         this.vehicle = new YUKA.Vehicle();
+        this.vehicle.maxSpeed = 3;
+        this.vehicle.mass = 0.1;
         //vehicle.maxSpeed = 2;
         //vehicle.setRenderComponent(vehicleMesh, sync);
         const path = new YUKA.Path();
         path.loop = true;
         path.add(new YUKA.Vector3(290, 0, 340));
-        path.add(new YUKA.Vector3(200, 0, 350));
-        path.add(new YUKA.Vector3(200, 0, 280));
-        path.add(new YUKA.Vector3(150, 0, 300));
+        path.add(new YUKA.Vector3(100, 0, 350));
+        path.add(new YUKA.Vector3(-80, 0, 260));
+        path.add(new YUKA.Vector3(200, 0, 150));
+        
         //path.add(new YUKA.Vector3(250, 0, 340));
     
         this.vehicle.position.copy(path.current());
@@ -45,6 +48,12 @@ export default class BattleShip {
         this.entityManager.add(this.vehicle);
         
         path._waypoints.push(path._waypoints[0]);
+        var lines = BABYLON.MeshBuilder.CreateLines('lines', {
+            points: path._waypoints,
+            updatable: true,
+          })
+        
+        lines.color = BABYLON.Color3.Teal()
         //onPathBehavior.active = false;
         //onPathBehavior.radius = 10;
         this.entityManager.update(this.time.update().getDelta())
@@ -63,7 +72,8 @@ export default class BattleShip {
         this.entityManager.update(delta);
         //var vy = vehicleMesh.physicsImpostor.physicsBody.velocity.y
         var vy = -(this.vehicleMesh.position.y+this.altOffset.y);
-        var meshVelocity = new BABYLON.Vector3(-1,vy,0);//this.vehicle.velocity.x,vy,this.vehicle.velocity.z)
+        var meshVelocity = new BABYLON.Vector3(this.vehicle.velocity.x,vy,this.vehicle.velocity.z);
+        //var meshVelocity = new BABYLON.Vector3(-1,vy,0);//this.vehicle.velocity.x,vy,this.vehicle.velocity.z)
         this.vehicleMesh.physicsImpostor.setLinearVelocity(meshVelocity);
         this.vehicleMesh.physicsImpostor.physicsBody.angularVelocity = new CANNON.Vec3(0,0,0);
     }

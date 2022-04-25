@@ -343,7 +343,7 @@ export default function canvas(canvas)  {
         tinyAirplane.hud.setPower(tinyAirplane.airplane.enginePower);
         tinyAirplane.hud.setAltitude(tinyAirplane.airplane.collision.position.y);
         tinyAirplane.hud.update(elapsedTime);
-            //}
+           // }
     }
     function animate(){
         //assetsManager.onFinish = function (tasks) {

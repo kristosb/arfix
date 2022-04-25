@@ -215,8 +215,11 @@ export class AirplaneWW2 extends VehicleData{
     }
     createBody(mass = 50, size, offset){
         var chassisShape;
+        var mat = new CANNON.Material('Mat');
+		mat.friction = 0.8;
         chassisShape = new CANNON.Box(new CANNON.Vec3(size.x, size.y, size.z));
         var chassisBody = new CANNON.Body({ mass: mass });
+        chassisBody.material = mat;
         chassisBody.addShape(chassisShape, new CANNON.Vec3(offset.x, offset.y, offset.z));
         chassisBody.angularDamping = 0.8;
         return chassisBody;
