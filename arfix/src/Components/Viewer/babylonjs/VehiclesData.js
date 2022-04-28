@@ -151,6 +151,9 @@ export class AirplaneWW2 extends VehicleData{
         this.visualMeshes = [meshAll[11]];//[rootVisualMesh];
         //add all meshes to chassis
         this.visualMeshes.forEach(vm=>{chassis.addChild(vm)});
+        this.visualMeshes[0].receiveShadows = true;
+        //optimization
+        this.visualMeshes[0].material.freeze();
 
         this.controls = {   rotor: meshAll[17],
                             rudder: meshAll[16],

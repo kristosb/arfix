@@ -23,15 +23,113 @@ import Inspector from './instrumentation';
 import Suspension from './Vehicle';
 import Battleship from './BattleShip';
 
-function createPhysicsImpostor(scene, entity, impostor, options, reparent) {
-    if (entity == null) return;
-    entity.checkCollisions = false;
-    const parent = entity.parent;
-    if (reparent === true) entity.parent = null;
-    entity.physicsImpostor = new BABYLON.PhysicsImpostor(entity, impostor, options, scene);
-    //console.log(entity.physicsImpostor.physicsBody);
-    if (reparent === true) entity.parent = parent;
-};
+const DIR = {UP:1, DOWN:2,LEFT:3, RIGHT:4,  TILT_LEFT:5, TILT_RIGHT:6, BRAKE:7, LEFT_RESET:8, RIGHT_RESET:9, POWER_UP:10, POWER_DOWN:11, LEFT_HOLD:12, RIGHT_HOLD:13, UNBRAKE:14};
+class vehicleParts{
+    constructor(){
+        this.bluePrint = null;
+        this.suspension = null;
+        this.avionics = null;
+        this.hud = null;
+        this.clock = new Clock();
+    }
+    set position(pos){
+        this.bluePrint.chassisMesh.setAbsolutePosition(pos);
+    }
+    get ready(){
+        return this.suspension!==null
+    }
+    
+    steer(dir){
+        switch(dir){
+            case DIR.UP:
+                //console.log("up");
+                this.avionics.pitch = -1;
+                break;
+            case DIR.DOWN:
+                //console.log("up");
+                this.avionics.pitch = 1;
+                break;
+            case DIR.LEFT:
+                //console.log("left");
+                this.avionics.yaw = -1;
+                this.suspension.left(0.5);
+                break;
+            case DIR.RIGHT:
+                //console.log("right");
+                this.avionics.yaw = 1;
+                this.suspension.right(0.5);
+                break;
+            case DIR.LEFT_RESET:
+                //console.log("left reset");
+                this.suspension.left(0);
+                break;
+            case DIR.RIGHT_RESET:
+                //console.log("right reset");
+                this.suspension.right(0);
+                break;
+            case DIR.LEFT_HOLD:
+                //console.log("left hold");
+                this.avionics.yaw = -1;
+                break;
+            case DIR.RIGHT_HOLD:
+                //console.log("right hold");
+                this.avionics.yaw = 1;
+                break;
+            case DIR.TILT_LEFT:
+                //console.log("tilt left");
+                this.avionics.roll = -1;
+                break;
+            case DIR.TILT_RIGHT:
+                //console.log("tilt right");
+                this.avionics.roll = 1;
+                break;
+            default:
+                console.log("vehicle invalid direction");
+        }
+    }
+    power(val){
+        switch(val){
+            case DIR.POWER_UP:
+                //console.log("power up");
+                this.avionics.enginePower = this.avionics.enginePower + 0.005;
+                this.avionics.speedModifier = 0.12;
+                break;
+            case DIR.POWER_DOWN:
+                //console.log("power down");
+                this.avionics.enginePower = this.avionics.enginePower - 0.005;
+                break;
+            default:
+                console.log("vehicle invalid power");
+        }
+    }
+    brake(val){
+        switch(val){
+            case DIR.BRAKE:
+                this.suspension.brake(5);
+                break;
+            case DIR.UNBRAKE:
+                this.suspension.unbrake();
+                break;
+            default:
+                console.log("vehicle invalid power");
+        }
+    }
+
+    update(){
+        if(this.avionics!=null && this.hud!=null){ //console.error("airplane modlel mesh error");
+            const elapsedTime = this.clock.getElapsedTime();
+            //console.log(elapsedTime);
+            this.hud.setRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(this.avionics.rotation.y),
+                                                -BABYLON.Tools.ToDegrees(this.avionics.rotation.x),
+                                                BABYLON.Tools.ToDegrees(this.avionics.rotation.z)));
+            this.hud.setSpeed(this.avionics.velocity.z);
+            this.hud.setPower(this.avionics.enginePower);
+            this.hud.setAltitude(this.avionics.collision.position.y);
+            this.hud.update(elapsedTime);
+        }//else {console.log("nohud")}
+
+    }
+}
 
 export default function canvas(canvas)  {
     var preserveSize = true;
@@ -45,7 +143,7 @@ export default function canvas(canvas)  {
         x: 0,
         y: 0
     }
-    const clock = new Clock();
+    //const clock = new Clock();
     const engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
     engine.loadingUIText = "Loading world and airplane...";
     engine.loadingUIBackgroundColor = "Purple";
@@ -71,15 +169,8 @@ export default function canvas(canvas)  {
     groundShadow = new ShadowManager(lights.sunLight);
     var inputMap = {};
     const keys = ["w", "s", "a", "d", "q", "e", "p", "o", "m", "n", "1", "2", "k", "b"];
-    //inputMap["k"] = {type:false,keyState:"up"};
     keys.forEach(key=>inputMap[key] = {type:false,keyState:"up"});
-    var tinyAirplane = {
-        vehicleData:null,
-        vehicle:null, 
-        airplane:null, 
-        hud: null 
-    };
-    //var nimitz = null;
+
     var assetsManager = new BABYLON.AssetsManager(scene);
     var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_2.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
@@ -106,22 +197,18 @@ export default function canvas(canvas)  {
         console.log("world finished");
         
     }
+    var aircraft = new vehicleParts();
+
     meshAirplaneTask.onSuccess = function (task) {
-        tinyAirplane.vehicleData = new AirplaneWW2(scene, task.loadedMeshes, new BABYLON.Vector3(275, 6.5, 364),new BABYLON.Vector3(0,-Math.PI/2,0));
-        //tinyAirplane.vehicleData.chassisMesh.rotate(BABYLON.Vector3.Up(), Math.PI/2); //rotation.x = Math.PI/2;//set(new BABYLON.Vector3(Math.PI/2,0,0));
-        console.log("rot",tinyAirplane.vehicleData.chassisMesh.rotation);// = new BABYLON.Vector3(0,0,0);
-        tinyAirplane.vehicle = new Suspension(scene, tinyAirplane.vehicleData);
-        tinyAirplane.airplane = new Airplane(scene, tinyAirplane.vehicleData.chassisBody, tinyAirplane.vehicleData.controls);
-        tinyAirplane.hud = new HudPanel(scene, canvas);
-        tinyAirplane.hud.linkWithMesh(tinyAirplane.vehicleData.chassisMesh);  
-        camera.lockedTarget =  tinyAirplane.vehicleData.chassisMesh; 
-        //console.log(tinyAirplane.vehicleData.chassisMesh);
-        tinyAirplane.vehicleData.chassisMesh.setAbsolutePosition(new BABYLON.Vector3(-10,5.7,-5));
-        //tinyAirplane.vehicleData.chassisMesh.setAbsolutePosition(new BABYLON.Vector3(250+10,5.7,200+145));//new BABYLON.Vector3(60,8,100));
-        tinyAirplane.vehicleData.visualMeshes[0].receiveShadows = true;
-        groundShadow.addMesh(tinyAirplane.vehicleData.visualMeshes[0]);
-        //optimization
-        tinyAirplane.vehicleData.visualMeshes[0].material.freeze();
+        aircraft.bluePrint = new AirplaneWW2(scene, task.loadedMeshes, new BABYLON.Vector3(275, 6.5, 364),new BABYLON.Vector3(0,-Math.PI/2,0));
+        aircraft.suspension = new Suspension(scene, aircraft.bluePrint);
+        aircraft.avionics = new Airplane(scene, aircraft.bluePrint.chassisBody, aircraft.bluePrint.controls);
+        aircraft.hud = new HudPanel(scene, canvas);
+        aircraft.hud.linkWithMesh(aircraft.bluePrint.chassisMesh); 
+        camera.lockedTarget =  aircraft.bluePrint.chassisMesh; 
+        aircraft.position = new BABYLON.Vector3(-10,5.7,-5);
+        groundShadow.addMesh(aircraft.bluePrint.visualMeshes[0]);
+
         console.log("airplane finished");
     }
     meshCarrierTask.onSuccess = function (task) {
@@ -133,7 +220,6 @@ export default function canvas(canvas)  {
         registerActions(scene);
         ocean = new OceanSim(scene, worldSize);
         sceneLoaded = true;
-        //showImpostors(scene);
         console.log("manager finished");
     }
     assetsManager.load();
@@ -141,9 +227,6 @@ export default function canvas(canvas)  {
     function buildScene() {  
         // Create a basic BJS Scene object
         const scene = new BABYLON.Scene(engine);
-        //scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
-        //scene.environmentTexture = BABYLON.BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
-        // Return the created scene
         return scene;
     }
     function buildLight(scene){
@@ -183,9 +266,7 @@ export default function canvas(canvas)  {
         var followCamera = new BABYLON.FollowCamera("followcamera", new BABYLON.Vector3(0,0,-100), scene);
         followCamera.heightOffset = 1;
         //followCamera.rotationOffset = 180;
-        followCamera.cameraAcceleration = 0.05   ;//0.06
-        
-    
+        followCamera.cameraAcceleration = 0.05   ;//0.06 
         followCamera.maxCameraSpeed = 1800;//1800
         followCamera.inertia = 20.0;//20
         followCamera.radius = -5;
@@ -205,15 +286,7 @@ export default function canvas(canvas)  {
         const sceneSubjects = new SceneSubject(scene);
         return sceneSubjects;
     }
-    const showImpostors = function(scene) {    
-        scene.meshes.forEach(mesh => {
-            if (mesh.physicsImpostor == null) {
-                // no physics impostor, skip
-                return;
-            }
-            physicsViewer.showImpostor(mesh.physicsImpostor, mesh);
-        });
-    };
+
     function registerActions(scene){
         // Keyboard events
         scene.actionManager = new BABYLON.ActionManager(scene);
@@ -226,48 +299,22 @@ export default function canvas(canvas)  {
 
     }
     function actions(){
-        if(tinyAirplane.vehicle!==null){
-            keyAction("q", ()=>tinyAirplane.airplane.roll = -1);
-            keyAction("e", ()=>tinyAirplane.airplane.roll = 1);
-            /*keyAction("a", ()=>{
-                tinyAirplane.airplane.yaw = 1;
-                //tinyAirplane.vehicle.direction = 0.5;
-                //tinyAirplane.vehicle.direction = -Math.PI/6;
-            });
-            keyAction("d", ()=>{
-                tinyAirplane.airplane.yaw = -1;
-                //tinyAirplane.vehicle.direction = -0.5;
-                //tinyAirplane.vehicle.direction = Math.PI/6;
-            });*/
-            keyAction("w", ()=>tinyAirplane.airplane.pitch = 1);
-            keyAction("s", ()=>tinyAirplane.airplane.pitch = -1);
-            //keyActionTrig("w", ()=>tinyAirplane.vehicle.forward(5),()=>tinyAirplane.vehicle.forward(0));
-            //keyActionTrig("s", ()=>tinyAirplane.vehicle.forward(-5),()=>tinyAirplane.vehicle.forward(0));
-            keyActionTrig("d", ()=>{
-                tinyAirplane.airplane.yaw = -1;
-                tinyAirplane.vehicle.left(0.5);
-                },()=>tinyAirplane.vehicle.left(0),
-                ()=>tinyAirplane.airplane.yaw = -1);
-            keyActionTrig("a", ()=>{
-                tinyAirplane.airplane.yaw = 1;
-                tinyAirplane.vehicle.right(0.5);
-                },()=>tinyAirplane.vehicle.right(0),
-                ()=>tinyAirplane.airplane.yaw = 1);
-            keyAction("m", ()=> {
-                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower + 0.005;
-                tinyAirplane.airplane.speedModifier = 0.12; //0.12
-                //tinyAirplane.vehicle.acceleration = 20;//40
-                
-                //tinyAirplane.vehicle.vehicle.setWheelForce(400, 0);
-                //tinyAirplane.vehicle.vehicle.setWheelForce(400, 1);
-            });
-            keyAction("n", ()=> {
-                tinyAirplane.airplane.enginePower = tinyAirplane.airplane.enginePower - 0.005;
-                //tinyAirplane.vehicle.acceleration = -20;//-20
-            });
-            keyActionTrig("b", ()=> tinyAirplane.vehicle.brake(5),
-                               ()=> tinyAirplane.vehicle.unbrake(),
-                               ()=> tinyAirplane.vehicle.brake(5));
+        if(aircraft.ready){
+            keyAction("q", ()=>aircraft.steer(DIR.TILT_LEFT));
+            keyAction("e", ()=>aircraft.steer(DIR.TILT_RIGHT));
+            keyAction("w", ()=>aircraft.steer(DIR.DOWN));
+            keyAction("s", ()=>aircraft.steer(DIR.UP));
+            keyActionTrig("d", ()=>aircraft.steer(DIR.LEFT),
+                               ()=>aircraft.steer(DIR.LEFT_RESET),
+                               ()=>aircraft.steer(DIR.LEFT_HOLD));
+            keyActionTrig("a", ()=>aircraft.steer(DIR.RIGHT),
+                               ()=>aircraft.steer(DIR.RIGHT_RESET),
+                               ()=>aircraft.steer(DIR.RIGHT_HOLD));   
+            keyAction("m", ()=>aircraft.power(DIR.POWER_UP));    
+            keyAction("n", ()=>aircraft.power(DIR.POWER_DOWN));     
+            keyActionTrig("b", ()=> aircraft.brake(DIR.BRAKE),
+                               ()=> aircraft.brake(DIR.UNBRAKE),
+                               ()=> aircraft.brake(DIR.BRAKE));   
         }
 
         keyActionTrig("o", ()=> scene.debugLayer.show());
@@ -279,7 +326,10 @@ export default function canvas(canvas)  {
             sky.transitionSunInclination(-0.025);
             groundShadow.updateOnce();
         });
-        keyActionTrig("p", ()=> scene.physicsEnabled = !scene.physicsEnabled);
+        keyActionTrig("p", ()=> {
+            scene.physicsEnabled = !scene.physicsEnabled;
+            nimitzCarrier.pause = scene.physicsEnabled;
+        });
         
         //keyActionTrig("k", ()=> console.log("down"));//, x=>console.log("hold"));
             
@@ -290,19 +340,7 @@ export default function canvas(canvas)  {
             onKeyFunc();
         }
     }
-    /*function keyActionTrig(key, onKeyDownFunc = () => {}, onKeyHoldFunc = () => {} ){
-        if(inputMap[key].type) {
-            if(inputMap[key].keyState == "up") {
-                inputMap[key].keyState = "down"; 
-                onKeyDownFunc();
-            }
-            else {
-                inputMap[key].keyState = "hold";
-                onKeyHoldFunc();
-            }
-        }
 
-    }*/
     function keyActionTrig(key, onKeyDownFunc = () => {},onKeyUpFunc = () => {}, onKeyHoldFunc = () => {} ){
         if(inputMap[key].type) {
             if(inputMap[key].keyState == "up") {
@@ -331,29 +369,13 @@ export default function canvas(canvas)  {
         engine.resize();
     }
 
-    function hudUpdate(){
-        //if(tinyAirplane.airplane!==null){ 
-        if(!tinyAirplane.airplane) console.error("airplane modlel mesh error");
-        const elapsedTime = clock.getElapsedTime();
-        //console.log(elapsedTime);
-        tinyAirplane.hud.setRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.y),
-                                            -BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.x),
-                                            BABYLON.Tools.ToDegrees(tinyAirplane.airplane.rotation.z)));
-        tinyAirplane.hud.setSpeed(tinyAirplane.airplane.velocity.z);
-        tinyAirplane.hud.setPower(tinyAirplane.airplane.enginePower);
-        tinyAirplane.hud.setAltitude(tinyAirplane.airplane.collision.position.y);
-        tinyAirplane.hud.update(elapsedTime);
-           // }
-    }
     function animate(){
         //assetsManager.onFinish = function (tasks) {
             engine.runRenderLoop(function () {
                 if (sceneLoaded){
                     actions();
-                    hudUpdate();
-                    //tinyAirplane.vehicle.update();
+                    aircraft.update();
                     nimitzCarrier.update();
-                    //relativeVehicleForceUpdate();
                     //if (debugUI) debugUI.update();
                     scene.render();
                 }

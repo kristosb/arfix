@@ -7,6 +7,7 @@ export default class BattleShip {
     /**    
      * Projects a point to a plane along a ray starting from the camera origin and directed towards the point. 
      * @param {BABYLON.Scene} scene      
+     * @param {BABYLON.Mesh} visualMesh 
      *    
      */
     constructor(scene, visualMesh){
@@ -26,7 +27,7 @@ export default class BattleShip {
         this.entityManager = new YUKA.EntityManager();
         this.time = new YUKA.Time();
         this.vehicle = new YUKA.Vehicle();
-        this.vehicle.maxSpeed = 3;
+        this.vehicle.maxSpeed = 1;
         this.vehicle.mass = 0.1;
         //vehicle.maxSpeed = 2;
         //vehicle.setRenderComponent(vehicleMesh, sync);
@@ -34,13 +35,15 @@ export default class BattleShip {
         path.loop = true;
         path.add(new YUKA.Vector3(290, 0, 340));
         path.add(new YUKA.Vector3(100, 0, 350));
-        path.add(new YUKA.Vector3(-80, 0, 260));
-        path.add(new YUKA.Vector3(200, 0, 150));
+        path.add(new YUKA.Vector3(0, 0, 300));
+        path.add(new YUKA.Vector3(20, 0, 180));
+        path.add(new YUKA.Vector3(140, 0, 140));
+        path.add(new YUKA.Vector3(300, 0, 200));
         
         //path.add(new YUKA.Vector3(250, 0, 340));
     
         this.vehicle.position.copy(path.current());
-    
+        this.vehicle.active = false;
         const followPathBehavior = new YUKA.FollowPathBehavior(path, 0.5);
         this.vehicle.steering.add(followPathBehavior);
         this.onPathBehavior = new YUKA.OnPathBehavior(path);
@@ -54,7 +57,7 @@ export default class BattleShip {
           })
         
         lines.color = BABYLON.Color3.Teal()
-        //onPathBehavior.active = false;
+        this.onPathBehavior.active = false;
         //onPathBehavior.radius = 10;
         this.entityManager.update(this.time.update().getDelta())
         console.log(this.vehicle.velocity);
@@ -63,10 +66,13 @@ export default class BattleShip {
         visualMesh.position.copyFrom(initPosition);
         visualMesh.position.y +=3.37;
         this.vehicleMesh.addChild(visualMesh);
-        this.vehicleMesh.rotate(new BABYLON.Vector3.Up(), Math.PI/2);
+        this.vehicleMesh.rotate(new BABYLON.Vector3.Up(), -Math.PI/2);
         this.altOffset = new BABYLON.Vector3(0,-2.3,0);
+        console.log("q",this.vehicleMesh.physicsImpostor.physicsBody.quaternion);
+        this.vehicle.rotation = new YUKA.Quaternion(this.vehicleMesh.rotationQuaternion.x,this.vehicleMesh.rotationQuaternion.y,this.vehicleMesh.rotationQuaternion.z,this.vehicleMesh.rotationQuaternion.w);
     }
     update(){
+        
         const delta = this.time.update().getDelta();
         //console.log("entity", entityManager.entities[0].velocity);
         this.entityManager.update(delta);
@@ -76,5 +82,22 @@ export default class BattleShip {
         //var meshVelocity = new BABYLON.Vector3(-1,vy,0);//this.vehicle.velocity.x,vy,this.vehicle.velocity.z)
         this.vehicleMesh.physicsImpostor.setLinearVelocity(meshVelocity);
         this.vehicleMesh.physicsImpostor.physicsBody.angularVelocity = new CANNON.Vec3(0,0,0);
+        
+        var yukaRotation = this.vehicle.rotation;//.toEuler(new YUKA.Quaternion());
+        var rotC = new CANNON.Quaternion(yukaRotation.x, yukaRotation.y, yukaRotation.z,yukaRotation.w);
+        var rotE = new CANNON.Vec3();
+        var con = rotC.conjugate();
+        var rotated = con.mult(this.vehicleMesh.physicsImpostor.physicsBody.quaternion);
+        var res = new CANNON.Vec3();
+        rotated.toEuler(res);
+        //console.log("rot",res );
+        this.vehicleMesh.physicsImpostor.physicsBody.angularVelocity = new CANNON.Vec3(0,-res.y/10,0);
+        
+    }
+    set pause(val){
+        this.vehicle.active = val;
+    }
+    get pause(){
+        return this.vehicle.active;
     }
 }
