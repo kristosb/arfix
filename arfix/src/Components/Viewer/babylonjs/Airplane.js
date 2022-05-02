@@ -370,7 +370,7 @@ export default class AirplaneCannon {
         this.animationGroup.speedRatio = 1;
         this.controlsInitialize();
         this.registerForces();
-        console.log("cb=", this.collision);
+        //console.log("cb=", this.collision);
     }
 
     set lift(val){

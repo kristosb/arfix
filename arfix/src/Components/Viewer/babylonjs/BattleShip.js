@@ -23,7 +23,7 @@ export default class BattleShip {
         this.vehicleMesh.position.x -=4.3;
         this.vehicleMesh.physicsImpostor = new BABYLON.PhysicsImpostor(this.vehicleMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 100000, friction: 1, restitution: 0.9 }, scene);
         this.vehicleMesh.isVisible = false;
-        console.log(this.vehicleMesh.physicsImpostor.physicsBody.angularVelocity);
+        //console.log(this.vehicleMesh.physicsImpostor.physicsBody.angularVelocity);
         this.entityManager = new YUKA.EntityManager();
         this.time = new YUKA.Time();
         this.vehicle = new YUKA.Vehicle();
@@ -60,7 +60,7 @@ export default class BattleShip {
         this.onPathBehavior.active = false;
         //onPathBehavior.radius = 10;
         this.entityManager.update(this.time.update().getDelta())
-        console.log(this.vehicle.velocity);
+        //console.log(this.vehicle.velocity);
 
        // var visualMesh = BABYLON.MeshBuilder.CreateBox("battleshipMesh",{width:10, height:20, depth:10},scene);
         visualMesh.position.copyFrom(initPosition);
@@ -68,7 +68,7 @@ export default class BattleShip {
         this.vehicleMesh.addChild(visualMesh);
         this.vehicleMesh.rotate(new BABYLON.Vector3.Up(), -Math.PI/2);
         this.altOffset = new BABYLON.Vector3(0,-2.3,0);
-        console.log("q",this.vehicleMesh.physicsImpostor.physicsBody.quaternion);
+        //console.log("q",this.vehicleMesh.physicsImpostor.physicsBody.quaternion);
         this.vehicle.rotation = new YUKA.Quaternion(this.vehicleMesh.rotationQuaternion.x,this.vehicleMesh.rotationQuaternion.y,this.vehicleMesh.rotationQuaternion.z,this.vehicleMesh.rotationQuaternion.w);
     }
     update(){
@@ -83,11 +83,11 @@ export default class BattleShip {
         this.vehicleMesh.physicsImpostor.setLinearVelocity(meshVelocity);
         this.vehicleMesh.physicsImpostor.physicsBody.angularVelocity = new CANNON.Vec3(0,0,0);
         
-        var yukaRotation = this.vehicle.rotation;//.toEuler(new YUKA.Quaternion());
-        var rotC = new CANNON.Quaternion(yukaRotation.x, yukaRotation.y, yukaRotation.z,yukaRotation.w);
+        //var yukaRotation = this.vehicle.rotation;//.toEuler(new YUKA.Quaternion());
+        var rotC = new CANNON.Quaternion(this.vehicle.rotation.x, this.vehicle.rotation.y, this.vehicle.rotation.z,this.vehicle.rotation.w);
         var rotE = new CANNON.Vec3();
-        var con = rotC.conjugate();
-        var rotated = con.mult(this.vehicleMesh.physicsImpostor.physicsBody.quaternion);
+        var con = rotC.conjugate(); //find angle between quaternions
+        var rotated = con.mult(this.vehicleMesh.physicsImpostor.physicsBody.quaternion);    
         var res = new CANNON.Vec3();
         rotated.toEuler(res);
         //console.log("rot",res );

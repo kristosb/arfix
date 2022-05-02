@@ -22,6 +22,7 @@ import ShadowManager from './sahdowManager';
 import Inspector from './instrumentation';
 import Suspension from './Vehicle';
 import Battleship from './BattleShip';
+import Birds from './Birds';
 
 const DIR = {UP:1, DOWN:2,LEFT:3, RIGHT:4,  TILT_LEFT:5, TILT_RIGHT:6, BRAKE:7, LEFT_RESET:8, RIGHT_RESET:9, POWER_UP:10, POWER_DOWN:11, LEFT_HOLD:12, RIGHT_HOLD:13, UNBRAKE:14};
 class vehicleParts{
@@ -34,6 +35,9 @@ class vehicleParts{
     }
     set position(pos){
         this.bluePrint.chassisMesh.setAbsolutePosition(pos);
+    }
+    get position(){
+        return this.bluePrint.chassisMesh.position;
     }
     get ready(){
         return this.suspension!==null
@@ -157,7 +161,7 @@ export default function canvas(canvas)  {
     const worldSize = 800;
     // yuka
     var nimitzCarrier = null;
-
+    var birdFlock = null;
 
     const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, worldSize);
     sky.makeClouds(worldSize);
@@ -172,9 +176,18 @@ export default function canvas(canvas)  {
     keys.forEach(key=>inputMap[key] = {type:false,keyState:"up"});
 
     var assetsManager = new BABYLON.AssetsManager(scene);
+
+    assetsManager.addContainerTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
+        var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
+        this._tasks.push(task);
+        return task;
+    };
+
     var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_2.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
     var meshCarrierTask = assetsManager.addMeshTask("nimitz", "", process.env.PUBLIC_URL+"/assets/", "nimitz_single_mesh.glb");
+    //var meshBirdTask = assetsManager.addMeshTask("bird", "", process.env.PUBLIC_URL+"/assets/", "bird.glb");
+    var meshBirdTask = assetsManager.addContainerTask("bird", "", process.env.PUBLIC_URL+"/assets/", "bird.glb");
     meshWorldTask.onSuccess = function (task) {   
         var meshAll = task.loadedMeshes;
         meshAll[0].removeChild(meshAll[1]);
@@ -215,7 +228,17 @@ export default function canvas(canvas)  {
         var nimitzMesh = task.loadedMeshes[0];
         nimitzCarrier = new Battleship(scene,nimitzMesh);
     }
-
+    meshBirdTask.onSuccess = function (task) {
+        var birds = [];
+        for (let i = 0; i < 4; i++){
+            let firstPlane = task.loadedContainer.instantiateModelsToScene(name => name + "_"+i.toString(), false);
+            //console.log("b",firstPlane);
+            firstPlane.rootNodes[0].scaling = new BABYLON.Vector3(0.02, 0.02, 0.02);
+            firstPlane.animationGroups[0].start(true);      
+            birds.push(firstPlane.rootNodes[0]);
+        }
+        birdFlock = new Birds(scene, birds);
+    }
     assetsManager.onFinish= function (task){
         registerActions(scene);
         ocean = new OceanSim(scene, worldSize);
@@ -223,6 +246,7 @@ export default function canvas(canvas)  {
         console.log("manager finished");
     }
     assetsManager.load();
+
 
     function buildScene() {  
         // Create a basic BJS Scene object
@@ -329,6 +353,7 @@ export default function canvas(canvas)  {
         keyActionTrig("p", ()=> {
             scene.physicsEnabled = !scene.physicsEnabled;
             nimitzCarrier.pause = scene.physicsEnabled;
+            birdFlock.pause = scene.physicsEnabled;
         });
         
         //keyActionTrig("k", ()=> console.log("down"));//, x=>console.log("hold"));
@@ -376,6 +401,9 @@ export default function canvas(canvas)  {
                     actions();
                     aircraft.update();
                     nimitzCarrier.update();
+                    birdFlock.update();
+                    //console.log(aircraft.position);
+                    birdFlock.enemyPosition  = aircraft.position;
                     //if (debugUI) debugUI.update();
                     scene.render();
                 }
@@ -393,3 +421,53 @@ export default function canvas(canvas)  {
         animate
     }
 }
+class ContainerAssetTask extends BABYLON.AbstractAssetTask{
+    constructor(
+        /**
+         * Defines the name of the task
+         */
+        name,
+        /**
+         * Defines the list of mesh's names you want to load
+         */
+        meshesNames,
+        /**
+         * Defines the root url to use as a base to load your meshes and associated resources
+         */
+        rootUrl,
+        /**
+         * Defines the filename of the scene to load from
+         */
+        sceneFilename) {
+        super(name);
+        this.name = name;
+        this.meshesNames = meshesNames;
+        this.rootUrl = rootUrl;
+        this.sceneFilename = sceneFilename;           
+    }
+    /**
+     * Execute the current task
+     * @param scene defines the scene where you want your assets to be loaded
+     * @param onSuccess is a callback called when the task is successfully executed
+     * @param onError is a callback called if an error occurs
+     */
+    runTask(scene, onSuccess, onError) {
+        var _this = this;
+        BABYLON.SceneLoader.LoadAssetContainer(this.rootUrl, this.sceneFilename, scene, function (container) {
+            _this.loadedContainer = container;
+            _this.loadedMeshes = container.meshes;
+            _this.loadedParticleSystems = container.particleSystems;
+            _this.loadedSkeletons = container.skeletons;
+            _this.loadedAnimationGroups = container.animationGroups;
+            onSuccess();
+        }, null, function (scene, message, exception) {
+            onError(message, exception);
+        });
+    };
+
+}
+BABYLON.AssetsManager.prototype.addContainerTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
+    var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
+    this._tasks.push(task);
+    return task;
+};
