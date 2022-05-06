@@ -23,6 +23,7 @@ import Inspector from './instrumentation';
 import Suspension from './Vehicle';
 import Battleship from './BattleShip';
 import Birds from './Birds';
+import { createVehicle } from './ActorsShapes.js'
 
 const DIR = {UP:1, DOWN:2,LEFT:3, RIGHT:4,  TILT_LEFT:5, TILT_RIGHT:6, BRAKE:7, LEFT_RESET:8, RIGHT_RESET:9, POWER_UP:10, POWER_DOWN:11, LEFT_HOLD:12, RIGHT_HOLD:13, UNBRAKE:14};
 class vehicleParts{
@@ -177,17 +178,17 @@ export default function canvas(canvas)  {
 
     var assetsManager = new BABYLON.AssetsManager(scene);
 
-    assetsManager.addContainerTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
+    /*assetsManager.addContainerTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
         var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
         this._tasks.push(task);
         return task;
-    };
+    };*/
 
     var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_2.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
     var meshCarrierTask = assetsManager.addMeshTask("nimitz", "", process.env.PUBLIC_URL+"/assets/", "nimitz_single_mesh.glb");
-    //var meshBirdTask = assetsManager.addMeshTask("bird", "", process.env.PUBLIC_URL+"/assets/", "bird.glb");
-    var meshBirdTask = assetsManager.addContainerTask("bird", "", process.env.PUBLIC_URL+"/assets/", "bird.glb");
+    var meshBirdTask = assetsManager.addMeshTask("bird", "", process.env.PUBLIC_URL+"/assets/", "flying-gull.glb");
+    //var meshBirdTask = assetsManager.addContainerTask("bird", "", process.env.PUBLIC_URL+"/assets/", "bird.glb");
     meshWorldTask.onSuccess = function (task) {   
         var meshAll = task.loadedMeshes;
         meshAll[0].removeChild(meshAll[1]);
@@ -229,15 +230,26 @@ export default function canvas(canvas)  {
         nimitzCarrier = new Battleship(scene,nimitzMesh);
     }
     meshBirdTask.onSuccess = function (task) {
+        const gullModel = task.loadedMeshes[0];
+        gullModel.scaling = new BABYLON.Vector3(0.015,0.015,0.015);
+        console.log("gull",gullModel);
         var birds = [];
-        for (let i = 0; i < 4; i++){
-            let firstPlane = task.loadedContainer.instantiateModelsToScene(name => name + "_"+i.toString(), false);
+        //const vehicleMeshPrefab = createVehicle(scene, { size: 1 });
+        for (let i = 0; i < 10; i++){
+            const gull = gullModel.clone('gull_'+i.toString());
+            gull.setEnabled(true);
+            //let firstPlane = task.loadedContainer.instantiateModelsToScene(name => name + "_"+i.toString(), false);
             //console.log("b",firstPlane);
-            firstPlane.rootNodes[0].scaling = new BABYLON.Vector3(0.02, 0.02, 0.02);
-            firstPlane.animationGroups[0].start(true);      
-            birds.push(firstPlane.rootNodes[0]);
+            //firstPlane.rootNodes[0].scaling = new BABYLON.Vector3(0.02, 0.02, 0.02);
+            //firstPlane.animationGroups[0].start(true);      
+            //birds.push(firstPlane.rootNodes[0]);
+            //const birdMesh = vehicleMeshPrefab.clone('bird_'+i.toString());
+            birds.push(gull);
         }
+        //camera.lockedTarget =  birds[0]; 
         birdFlock = new Birds(scene, birds);
+        gullModel.dispose();
+
     }
     assetsManager.onFinish= function (task){
         registerActions(scene);
@@ -421,23 +433,11 @@ export default function canvas(canvas)  {
         animate
     }
 }
-class ContainerAssetTask extends BABYLON.AbstractAssetTask{
+/*class ContainerAssetTask extends BABYLON.AbstractAssetTask{
     constructor(
-        /**
-         * Defines the name of the task
-         */
         name,
-        /**
-         * Defines the list of mesh's names you want to load
-         */
         meshesNames,
-        /**
-         * Defines the root url to use as a base to load your meshes and associated resources
-         */
         rootUrl,
-        /**
-         * Defines the filename of the scene to load from
-         */
         sceneFilename) {
         super(name);
         this.name = name;
@@ -445,12 +445,6 @@ class ContainerAssetTask extends BABYLON.AbstractAssetTask{
         this.rootUrl = rootUrl;
         this.sceneFilename = sceneFilename;           
     }
-    /**
-     * Execute the current task
-     * @param scene defines the scene where you want your assets to be loaded
-     * @param onSuccess is a callback called when the task is successfully executed
-     * @param onError is a callback called if an error occurs
-     */
     runTask(scene, onSuccess, onError) {
         var _this = this;
         BABYLON.SceneLoader.LoadAssetContainer(this.rootUrl, this.sceneFilename, scene, function (container) {
@@ -470,4 +464,4 @@ BABYLON.AssetsManager.prototype.addContainerTask = function (taskName, meshesNam
     var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
     this._tasks.push(task);
     return task;
-};
+};*/

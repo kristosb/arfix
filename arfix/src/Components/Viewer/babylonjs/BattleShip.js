@@ -10,7 +10,8 @@ export default class BattleShip {
      * @param {BABYLON.Mesh} visualMesh 
      *    
      */
-    constructor(scene, visualMesh){
+    constructor(scene, visualMesh,options){
+        options = options || {};
         var initPosition = new BABYLON.Vector3(260, 4, 350);
         this.vehicleMesh = BABYLON.MeshBuilder.CreateBox("yukaMesh",{width:12, height:3, depth:54},scene);
         var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
@@ -51,12 +52,14 @@ export default class BattleShip {
         this.entityManager.add(this.vehicle);
         
         path._waypoints.push(path._waypoints[0]);
+
+        if(options.debug){
         var lines = BABYLON.MeshBuilder.CreateLines('lines', {
             points: path._waypoints,
             updatable: true,
-          })
-        
+        })
         lines.color = BABYLON.Color3.Teal()
+        }
         this.onPathBehavior.active = false;
         //onPathBehavior.radius = 10;
         this.entityManager.update(this.time.update().getDelta())

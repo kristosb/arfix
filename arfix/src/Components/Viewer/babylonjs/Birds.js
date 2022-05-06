@@ -24,46 +24,44 @@ class LimitBoxBehavior extends YUKA.SteeringBehavior {
           */
           this.dBoxMinLength = 4; //
     }
-        /**
-      * Calculates the steering force for a single simulation step.
-      *
-      * @param {Vehicle} vehicle - The game entity the force is produced for.
-      * @param {Vector3} force - The force/result vector.
-      * @param {Number} delta - The time delta.
-      * @return {Vector3} The force/result vector.
-      */
-      calculate( vehicle, force /*, delta */ ) {
-      const limitBox = this.limitBox;
-      vehicle.worldMatrix.getInverse( inverse );
-      const dBoxLength = this.dBoxMinLength + ( vehicle.getSpeed() / vehicle.maxSpeed ) * this.dBoxMinLength;
-      // calculate this obstacle's position in local space of the vehicle
-      localPositionOfLimitBox.copy( limitBox.position ).applyMatrix4( inverse );
-      //console.log(localPositionOfLimitBox.length());
-      if ( localPositionOfLimitBox.z < 0 ){//&& Math.abs( localPositionOfObstacle.z ) < dBoxLength ) {
-        const expandedRadius = limitBox.boundingRadius;// + vehicle.boundingRadius;
-          var vehicleSphereDitsance = expandedRadius -localPositionOfLimitBox.length();
-          if ( vehicleSphereDitsance < 0) {
-            //console.log(intersectionPoint);
-            var multiplier = -vehicleSphereDitsance*20;
-            force.x = localPositionOfLimitBox.x * multiplier;
-            force.y = localPositionOfLimitBox.y * multiplier/5;
-            // apply a braking force proportional to the obstacles distance from the vehicle
-            force.z = -10*multiplier;//( limitBox.boundingRadius + localPositionOfLimitBox.z ) * this.brakingWeight;
-      
-            // finally, convert the steering vector from local to world space (just apply the rotation)
-            //console.log(force );
-            force.applyRotation( vehicle.rotation );
-            
-          }
-  
+      /**
+    * Calculates the steering force for a single simulation step.
+    *
+    * @param {YUKA.Vehicle} vehicle - The game entity the force is produced for.
+    * @param {YUKA.Vector3} force - The force/result vector.
+    * @param {Number} delta - The time delta.
+    * @return {YUKA.Vector3} The force/result vector.
+    */
+    calculate( vehicle, force /*, delta */ ) {
+        const limitBox = this.limitBox;
+        vehicle.worldMatrix.getInverse( inverse );
+        const dBoxLength = this.dBoxMinLength + ( vehicle.getSpeed() / vehicle.maxSpeed ) * this.dBoxMinLength;
+        // calculate this obstacle's position in local space of the vehicle
+        localPositionOfLimitBox.copy( limitBox.position ).applyMatrix4( inverse );
+        //console.log(localPositionOfLimitBox.length());
+        if ( localPositionOfLimitBox.z < 0 ){//&& Math.abs( localPositionOfObstacle.z ) < dBoxLength ) {
+          const expandedRadius = limitBox.boundingRadius;// + vehicle.boundingRadius;
+            var vehicleSphereDitsance = expandedRadius -localPositionOfLimitBox.length();
+            if ( vehicleSphereDitsance < 0) {
+              //console.log(intersectionPoint);
+              var multiplier = -vehicleSphereDitsance*20;
+              force.x = localPositionOfLimitBox.x * multiplier;
+              force.y = localPositionOfLimitBox.y * multiplier/10;
+              // apply a braking force proportional to the obstacles distance from the vehicle
+              force.z = -10*multiplier;//( limitBox.boundingRadius + localPositionOfLimitBox.z ) * this.brakingWeight;
         
-        //}
-        //console.log(intersectionPoint);
-      }
-      //console.log(localPositionOfLimitBox);
-      //console.log(dBoxLength);
-          return force;
-  
+              // finally, convert the steering vector from local to world space (just apply the rotation)
+              //console.log(force );
+              force.applyRotation( vehicle.rotation );
+              
+            }
+          }
+        //const vehicleOrientation = new YUKA.Vector3();
+        const speed = 6*(1.5+(vehicle.rotation.toEuler(new YUKA.Vector3()).x/ (Math.PI/4)));
+        //console.log(vehicle.rotation.toEuler(new YUKA.Vector3()).x,speed);
+        vehicle.maxSpeed = speed;
+        //if ( vehicle.rotation.toEuler(new YUKA.Vector3()).x > 0 ) vehicle.maxSpeed = 12; else vehicle.maxSpeed = 5;
+        return force;
       }
   
     /**
@@ -118,17 +116,27 @@ export default class Birds {
      * @param {BABYLON.Scene} scene      
      *    
      */
-    constructor(scene, meshes){
+    constructor(scene, meshes,options){
+        options = options || {};
         this.entityMatrix = new BABYLON.Matrix();
         this.entityManager = new YUKA.EntityManager();
         this.time = new YUKA.Time();
         var initPosition = new BABYLON.Vector3(150, 35, 240);
         var limitBox = null;
-        limitBox = setupLimitBox(scene, 100, new BABYLON.Vector3(initPosition.x, initPosition.y+50, initPosition.z));
+        limitBox = setupLimitBox(scene, 100, new BABYLON.Vector3(initPosition.x, initPosition.y+50, initPosition.z), options.debug);
         this.entityManager.add(limitBox);
         //console.log("bird",mesh);
         //const vehicleMeshPrefab = //createVehicle(scene, { size: 5 });
         //vehicleMeshPrefab.setEnabled(false);
+        const alignmentBehavior = new YUKA.AlignmentBehavior();
+        const cohesionBehavior = new YUKA.CohesionBehavior();
+        const separationBehavior = new YUKA.SeparationBehavior();
+        
+        alignmentBehavior.weight = 1.9;
+        cohesionBehavior.weight = 2.5;
+        separationBehavior.weight = 0.15;
+        
+
         this.enemy = new YUKA.Vector3();
 
         //for (let i = 0; i < 1; i++) {
@@ -138,27 +146,34 @@ export default class Birds {
             vehicleMesh.position.copyFrom(initPosition);
 
             const vehicle = new YUKA.Vehicle();
-            vehicle.maxSpeed = 11;//13
+            vehicle.maxSpeed = 10;//13
             vehicle.updateNeighborhood = true;
             vehicle.neighborhoodRadius = 30;
+
             
             vehicle.setRenderComponent(vehicleMesh, sync);
         
             vehicle.boundingRadius = vehicleMesh.getBoundingInfo().boundingSphere.radius;
             vehicle.smoother = new YUKA.Smoother(20);
             vehicle.position = new YUKA.Vector3(initPosition.x, initPosition.y, initPosition.z);
+            vehicle.position.x = vehicle.position.x - Math.random() * 5;
+            vehicle.position.z = vehicle.position.z - Math.random() * 5;
             vehicle.active = false;
             
+            vehicle.steering.add(alignmentBehavior);
+            vehicle.steering.add(cohesionBehavior);
+            vehicle.steering.add(separationBehavior);
+
             const wanderBehavior = new YUKA.WanderBehavior(1,5,5);
-            wanderBehavior.weight = 3;
+            wanderBehavior.weight = 1.2;
             vehicle.steering.add(wanderBehavior);
 
             const LimitBehavior = new LimitBoxBehavior(limitBox);
             vehicle.steering.add(LimitBehavior);
 
-            this.fleeBehavior = new YUKA.FleeBehavior(this.enemy , 20);
-            this.fleeBehavior.weight = 3;
-            vehicle.steering.add(this.fleeBehavior);
+            const fleeBehavior = new YUKA.FleeBehavior(this.enemy , 5);
+            fleeBehavior.weight = 5;
+            vehicle.steering.add(fleeBehavior);
             this.entityManager.add(vehicle);
         });
         //vehicleMeshPrefab.setEnabled(false);
@@ -183,9 +198,9 @@ export default class Birds {
     }
 }
 
-function setupLimitBox(scene, size, pos) {
+function setupLimitBox(scene, size, pos, debug) {
     const mesh1 = BABYLON.MeshBuilder.CreateBox('limitBox', { size: size }, scene)
-  
+    
     const meshMat = new BABYLON.StandardMaterial('meshMat', scene)
     meshMat.disableLighting = true
     meshMat.emissiveColor = BABYLON.Color3.Red()
@@ -193,7 +208,7 @@ function setupLimitBox(scene, size, pos) {
   
     mesh1.material = meshMat;
     mesh1.position.copyFrom(pos);
-  
+    mesh1.visibility = debug;
     var limitBox = new YUKA.GameEntity();
     limitBox.position.copy(mesh1.position);
     limitBox.boundingRadius = mesh1.getBoundingInfo().boundingSphere.radius * 1;

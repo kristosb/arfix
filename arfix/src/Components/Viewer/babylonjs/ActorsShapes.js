@@ -42,7 +42,7 @@ export const createVehicle = (scene, options) => {
     newVehicleMesh.name = name
     newVehicleMesh.position.y = options?.y ?? 0
     newVehicleMesh.bakeCurrentTransformIntoVertices()
-
+    newVehicleMesh.scaling.y = newVehicleMesh.scaling.y*0.3;
     return newVehicleMesh
   } else if (vehicleType === VehicleTypes.cone) {
     const vehicleMesh = BABYLON.MeshBuilder.CreateCylinder(name, { height, diameterTop, diameterBottom }, scene)
