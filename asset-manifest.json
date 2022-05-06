@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/arfix/static/css/main.c715c5b5.chunk.css",
-    "main.js": "/arfix/static/js/main.42d895c8.chunk.js",
-    "main.js.map": "/arfix/static/js/main.42d895c8.chunk.js.map",
+    "main.js": "/arfix/static/js/main.8468d60c.chunk.js",
+    "main.js.map": "/arfix/static/js/main.8468d60c.chunk.js.map",
     "runtime-main.js": "/arfix/static/js/runtime-main.e93748a2.js",
     "runtime-main.js.map": "/arfix/static/js/runtime-main.e93748a2.js.map",
-    "static/js/2.659ad93d.chunk.js": "/arfix/static/js/2.659ad93d.chunk.js",
-    "static/js/2.659ad93d.chunk.js.map": "/arfix/static/js/2.659ad93d.chunk.js.map",
+    "static/js/2.1266d780.chunk.js": "/arfix/static/js/2.1266d780.chunk.js",
+    "static/js/2.1266d780.chunk.js.map": "/arfix/static/js/2.1266d780.chunk.js.map",
     "static/js/3.6fcc08f8.chunk.js": "/arfix/static/js/3.6fcc08f8.chunk.js",
     "static/js/3.6fcc08f8.chunk.js.map": "/arfix/static/js/3.6fcc08f8.chunk.js.map",
     "index.html": "/arfix/index.html",
     "static/css/main.c715c5b5.chunk.css.map": "/arfix/static/css/main.c715c5b5.chunk.css.map",
-    "static/js/2.659ad93d.chunk.js.LICENSE.txt": "/arfix/static/js/2.659ad93d.chunk.js.LICENSE.txt"
+    "static/js/2.1266d780.chunk.js.LICENSE.txt": "/arfix/static/js/2.1266d780.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.e93748a2.js",
-    "static/js/2.659ad93d.chunk.js",
+    "static/js/2.1266d780.chunk.js",
     "static/css/main.c715c5b5.chunk.css",
-    "static/js/main.42d895c8.chunk.js"
+    "static/js/main.8468d60c.chunk.js"
   ]
 }
