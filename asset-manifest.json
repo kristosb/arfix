@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/arfix/static/css/main.c715c5b5.chunk.css",
-    "main.js": "/arfix/static/js/main.b946ecb6.chunk.js",
-    "main.js.map": "/arfix/static/js/main.b946ecb6.chunk.js.map",
+    "main.js": "/arfix/static/js/main.cc11ef02.chunk.js",
+    "main.js.map": "/arfix/static/js/main.cc11ef02.chunk.js.map",
     "runtime-main.js": "/arfix/static/js/runtime-main.e93748a2.js",
     "runtime-main.js.map": "/arfix/static/js/runtime-main.e93748a2.js.map",
     "static/js/2.1266d780.chunk.js": "/arfix/static/js/2.1266d780.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.e93748a2.js",
     "static/js/2.1266d780.chunk.js",
     "static/css/main.c715c5b5.chunk.css",
-    "static/js/main.b946ecb6.chunk.js"
+    "static/js/main.cc11ef02.chunk.js"
   ]
 }
