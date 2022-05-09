@@ -63,7 +63,6 @@ export default class BattleShip {
         this.onPathBehavior.active = false;
         //onPathBehavior.radius = 10;
         this.entityManager.update(this.time.update().getDelta())
-        //console.log(this.vehicle.velocity);
 
        // var visualMesh = BABYLON.MeshBuilder.CreateBox("battleshipMesh",{width:10, height:20, depth:10},scene);
         visualMesh.position.copyFrom(initPosition);
