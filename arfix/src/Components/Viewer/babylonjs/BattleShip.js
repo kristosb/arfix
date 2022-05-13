@@ -45,7 +45,7 @@ export default class BattleShip {
     
         this.vehicle.position.copy(path.current());
         this.vehicle.active = false;
-        const followPathBehavior = new YUKA.FollowPathBehavior(path, 0.5);
+        const followPathBehavior = new YUKA.FollowPathBehavior(path, 10);
         this.vehicle.steering.add(followPathBehavior);
         this.onPathBehavior = new YUKA.OnPathBehavior(path);
         this.vehicle.steering.add(this.onPathBehavior);

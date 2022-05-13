@@ -37,6 +37,15 @@ class Clock {
 
 	}
 
+	timeIntervalCheck(interval){
+		if(this.getElapsedTime() >= interval){
+			this.elapsedTime = 0;
+			return true;
+		}
+		else return false;
+
+	}
+
 	getDelta() {
 
 		let diff = 0;

@@ -138,7 +138,7 @@ class vehicleParts{
 
 export default function canvas(canvas)  {
     var preserveSize = true;
-
+    const FRAMERATE = 1/40;
     const screenDimensions = {
         width: canvas.width,
         height: canvas.height
@@ -163,7 +163,7 @@ export default function canvas(canvas)  {
     // yuka
     var nimitzCarrier = null;
     var birdFlock = null;
-
+    var recorder = null;
     const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, worldSize);
     sky.makeClouds(worldSize);
 
@@ -171,9 +171,11 @@ export default function canvas(canvas)  {
     var ocean = null;//new OceanSim(scene, worldSize);
     var ground = null;
     var groundShadow = null;
+    const fpcClock = new Clock();
+
     groundShadow = new ShadowManager(lights.sunLight);
     var inputMap = {};
-    const keys = ["w", "s", "a", "d", "q", "e", "p", "o", "m", "n", "1", "2", "k", "b"];
+    const keys = ["w", "s", "a", "d", "q", "e", "p", "o", "m", "n", "1", "2", "k", "b", "9","0"];
     keys.forEach(key=>inputMap[key] = {type:false,keyState:"up"});
 
     var assetsManager = new BABYLON.AssetsManager(scene);
@@ -254,6 +256,7 @@ export default function canvas(canvas)  {
     assetsManager.onFinish= function (task){
         registerActions(scene);
         ocean = new OceanSim(scene, worldSize);
+        recorder = new BABYLON.VideoRecorder(engine);
         sceneLoaded = true;
         console.log("manager finished");
     }
@@ -293,6 +296,7 @@ export default function canvas(canvas)  {
         scene.enablePhysics(gravityVector, physicsPlugin);
         var physicsEngine = scene.getPhysicsEngine();
         scene.physicsEnabled = false;
+        physicsPlugin.setTimeStep(1/30);
         //physicsEngine.setSubTimeStep(1);
 
         return physicsPlugin;
@@ -367,6 +371,20 @@ export default function canvas(canvas)  {
             nimitzCarrier.pause = scene.physicsEnabled;
             birdFlock.pause = scene.physicsEnabled;
         });
+        keyActionTrig("9", ()=> {
+            if (BABYLON.VideoRecorder.IsSupported(engine)) {
+                
+                recorder.startRecording("test.webm", 0);
+                console.log("start rec");
+            }
+        });
+        keyActionTrig("0", ()=> {
+            if (BABYLON.VideoRecorder.IsSupported(engine)) {
+                
+                recorder.stopRecording();
+                console.log("stop rec");
+            }
+        });
         
         //keyActionTrig("k", ()=> console.log("down"));//, x=>console.log("hold"));
             
@@ -405,31 +423,32 @@ export default function canvas(canvas)  {
     function onWindowResize() {
         engine.resize();
     }
-
+    //fpcClock.start();
     function animate(){
         //assetsManager.onFinish = function (tasks) {
             engine.runRenderLoop(function () {
                 if (sceneLoaded){
-                    actions();
-                    aircraft.update();
-                    nimitzCarrier.update();
-                    birdFlock.update();
-                    //console.log(aircraft.position);
-                    birdFlock.enemyPosition  = aircraft.position;
-                    //if (debugUI) debugUI.update();
-                    scene.render();
+                    //const elps = fpcClock.getDelta();
+                    
+                    if(fpcClock.timeIntervalCheck(FRAMERATE)){
+                        actions();
+                        aircraft.update();
+                        birdFlock.update();
+                        birdFlock.enemyPosition  = aircraft.position;
+                        nimitzCarrier.update();
+                        //if (debugUI) debugUI.update();
+                        scene.render();
+                    }
                 }
             });
         //}
     }
 
-    function onMouseMove(x, y) {
 
-    }
     return {
         update,
         onWindowResize,
-        onMouseMove,
+        //onMouseMove,
         animate
     }
 }
