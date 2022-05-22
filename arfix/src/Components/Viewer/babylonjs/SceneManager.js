@@ -22,8 +22,9 @@ import ShadowManager from './sahdowManager';
 import Inspector from './instrumentation';
 import Suspension from './Vehicle';
 import Battleship from './BattleShip';
+import Airship from './Airship';
 import Birds from './Birds';
-import { createVehicle } from './ActorsShapes.js'
+//import { createVehicle } from './ActorsShapes.js'
 
 const DIR = {UP:1, DOWN:2,LEFT:3, RIGHT:4,  TILT_LEFT:5, TILT_RIGHT:6, BRAKE:7, LEFT_RESET:8, RIGHT_RESET:9, POWER_UP:10, POWER_DOWN:11, LEFT_HOLD:12, RIGHT_HOLD:13, UNBRAKE:14};
 class vehicleParts{
@@ -152,6 +153,7 @@ export default function canvas(canvas)  {
     const engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
     engine.loadingUIText = "Loading world and airplane...";
     engine.loadingUIBackgroundColor = "Purple";
+    engine.stopRenderLoop();
     const scene = buildScene();
     //const debugUI = null;//new Inspector(engine);
     var sceneLoaded = false;
@@ -162,6 +164,7 @@ export default function canvas(canvas)  {
     const worldSize = 800;
     // yuka
     var nimitzCarrier = null;
+    var airshipCarrier = null;
     var birdFlock = null;
     var recorder = null;
     const sky = new SkySim(scene, lights.sunLight, lights.ambientlight, camera, worldSize);
@@ -190,6 +193,7 @@ export default function canvas(canvas)  {
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
     var meshCarrierTask = assetsManager.addMeshTask("nimitz", "", process.env.PUBLIC_URL+"/assets/", "nimitz_single_mesh.glb");
     var meshBirdTask = assetsManager.addMeshTask("bird", "", process.env.PUBLIC_URL+"/assets/", "flying-gull.glb");
+    var meshAirshipTask = assetsManager.addMeshTask("airship", "", process.env.PUBLIC_URL+"/assets/", "titan_parts_joined_uvmapped.glb");
     //var meshBirdTask = assetsManager.addContainerTask("bird", "", process.env.PUBLIC_URL+"/assets/", "bird.glb");
     meshWorldTask.onSuccess = function (task) {   
         var meshAll = task.loadedMeshes;
@@ -231,28 +235,30 @@ export default function canvas(canvas)  {
         var nimitzMesh = task.loadedMeshes[0];
         nimitzCarrier = new Battleship(scene,nimitzMesh);
     }
+    meshAirshipTask.onSuccess = function (task) {
+        var airshipMesh = task.loadedMeshes[0];
+        airshipCarrier = new Airship(scene,airshipMesh,{debug:false});
+    }
     meshBirdTask.onSuccess = function (task) {
-        const gullModel = task.loadedMeshes[0];
-        gullModel.scaling = new BABYLON.Vector3(0.015,0.015,0.015);
+        const gullModel = task.loadedMeshes[1];
+        gullModel.scaling = new BABYLON.Vector3(0.012,0.012,0.012);
+        gullModel.rotationQuaternion = new BABYLON.Vector3(0,-Math.PI/4,0).toQuaternion();
+        gullModel.bakeCurrentTransformIntoVertices();
         console.log("gull",gullModel);
         var birds = [];
         //const vehicleMeshPrefab = createVehicle(scene, { size: 1 });
-        for (let i = 0; i < 10; i++){
-            const gull = gullModel.clone('gull_'+i.toString());
-            gull.setEnabled(true);
-            //let firstPlane = task.loadedContainer.instantiateModelsToScene(name => name + "_"+i.toString(), false);
-            //console.log("b",firstPlane);
-            //firstPlane.rootNodes[0].scaling = new BABYLON.Vector3(0.02, 0.02, 0.02);
-            //firstPlane.animationGroups[0].start(true);      
-            //birds.push(firstPlane.rootNodes[0]);
-            //const birdMesh = vehicleMeshPrefab.clone('bird_'+i.toString());
+        for (let i = 0; i < 20; i++){
+            //const gull = gullModel.clone('gull_'+i.toString());
+            const gull = gullModel.createInstance('gull_'+i.toString());
+            //gull.setEnabled(true);
             birds.push(gull);
         }
         //camera.lockedTarget =  birds[0]; 
         birdFlock = new Birds(scene, birds);
-        gullModel.dispose();
+        //gullModel.dispose();
 
     }
+
     assetsManager.onFinish= function (task){
         registerActions(scene);
         ocean = new OceanSim(scene, worldSize);
@@ -369,6 +375,7 @@ export default function canvas(canvas)  {
         keyActionTrig("p", ()=> {
             scene.physicsEnabled = !scene.physicsEnabled;
             nimitzCarrier.pause = scene.physicsEnabled;
+            airshipCarrier.pause = scene.physicsEnabled;
             birdFlock.pause = scene.physicsEnabled;
         });
         keyActionTrig("9", ()=> {
@@ -426,6 +433,7 @@ export default function canvas(canvas)  {
     //fpcClock.start();
     function animate(){
         //assetsManager.onFinish = function (tasks) {
+            //engine.stopRenderLoop();
             engine.runRenderLoop(function () {
                 if (sceneLoaded){
                     //const elps = fpcClock.getDelta();
@@ -436,7 +444,9 @@ export default function canvas(canvas)  {
                         birdFlock.update();
                         birdFlock.enemyPosition  = aircraft.position;
                         nimitzCarrier.update();
+                        airshipCarrier.update();
                         //if (debugUI) debugUI.update();
+                        //if(scene.physicsEnabled) 
                         scene.render();
                     }
                 }
