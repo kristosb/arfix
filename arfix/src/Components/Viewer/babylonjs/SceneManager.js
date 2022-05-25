@@ -24,118 +24,8 @@ import Suspension from './Vehicle';
 import Battleship from './BattleShip';
 import Airship from './Airship';
 import Birds from './Birds';
+import vehicleParts from './VehicleComponents';
 //import { createVehicle } from './ActorsShapes.js'
-
-const DIR = {UP:1, DOWN:2,LEFT:3, RIGHT:4,  TILT_LEFT:5, TILT_RIGHT:6, BRAKE:7, LEFT_RESET:8, RIGHT_RESET:9, POWER_UP:10, POWER_DOWN:11, LEFT_HOLD:12, RIGHT_HOLD:13, UNBRAKE:14};
-class vehicleParts{
-    constructor(){
-        this.bluePrint = null;
-        this.suspension = null;
-        this.avionics = null;
-        this.hud = null;
-        this.clock = new Clock();
-    }
-    set position(pos){
-        this.bluePrint.chassisMesh.setAbsolutePosition(pos);
-    }
-    get position(){
-        return this.bluePrint.chassisMesh.position;
-    }
-    get ready(){
-        return this.suspension!==null
-    }
-    
-    steer(dir){
-        switch(dir){
-            case DIR.UP:
-                //console.log("up");
-                this.avionics.pitch = -1;
-                break;
-            case DIR.DOWN:
-                //console.log("up");
-                this.avionics.pitch = 1;
-                break;
-            case DIR.LEFT:
-                //console.log("left");
-                this.avionics.yaw = -1;
-                this.suspension.left(0.5);
-                break;
-            case DIR.RIGHT:
-                //console.log("right");
-                this.avionics.yaw = 1;
-                this.suspension.right(0.5);
-                break;
-            case DIR.LEFT_RESET:
-                //console.log("left reset");
-                this.suspension.left(0);
-                break;
-            case DIR.RIGHT_RESET:
-                //console.log("right reset");
-                this.suspension.right(0);
-                break;
-            case DIR.LEFT_HOLD:
-                //console.log("left hold");
-                this.avionics.yaw = -1;
-                break;
-            case DIR.RIGHT_HOLD:
-                //console.log("right hold");
-                this.avionics.yaw = 1;
-                break;
-            case DIR.TILT_LEFT:
-                //console.log("tilt left");
-                this.avionics.roll = -1;
-                break;
-            case DIR.TILT_RIGHT:
-                //console.log("tilt right");
-                this.avionics.roll = 1;
-                break;
-            default:
-                console.log("vehicle invalid direction");
-        }
-    }
-    power(val){
-        switch(val){
-            case DIR.POWER_UP:
-                //console.log("power up");
-                this.avionics.enginePower = this.avionics.enginePower + 0.005;
-                this.avionics.speedModifier = 0.12;
-                break;
-            case DIR.POWER_DOWN:
-                //console.log("power down");
-                this.avionics.enginePower = this.avionics.enginePower - 0.005;
-                break;
-            default:
-                console.log("vehicle invalid power");
-        }
-    }
-    brake(val){
-        switch(val){
-            case DIR.BRAKE:
-                this.suspension.brake(5);
-                break;
-            case DIR.UNBRAKE:
-                this.suspension.unbrake();
-                break;
-            default:
-                console.log("vehicle invalid power");
-        }
-    }
-
-    update(){
-        if(this.avionics!=null && this.hud!=null){ //console.error("airplane modlel mesh error");
-            const elapsedTime = this.clock.getElapsedTime();
-            //console.log(elapsedTime);
-            this.hud.setRotation(new BABYLON.Vector3( 180 +BABYLON.Tools.ToDegrees(this.avionics.rotation.y),
-                                                -BABYLON.Tools.ToDegrees(this.avionics.rotation.x),
-                                                BABYLON.Tools.ToDegrees(this.avionics.rotation.z)));
-            this.hud.setSpeed(this.avionics.velocity.z);
-            this.hud.setPower(this.avionics.enginePower);
-            this.hud.setAltitude(this.avionics.collision.position.y);
-            this.hud.update(elapsedTime);
-        }//else {console.log("nohud")}
-
-    }
-}
 
 export default function canvas(canvas)  {
     var preserveSize = true;
@@ -182,19 +72,11 @@ export default function canvas(canvas)  {
     keys.forEach(key=>inputMap[key] = {type:false,keyState:"up"});
 
     var assetsManager = new BABYLON.AssetsManager(scene);
-
-    /*assetsManager.addContainerTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
-        var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
-        this._tasks.push(task);
-        return task;
-    };*/
-
     var meshWorldTask = assetsManager.addMeshTask("world task", "", process.env.PUBLIC_URL+"/assets//", "achil_2.glb");
     var meshAirplaneTask = assetsManager.addMeshTask("airplane", "", process.env.PUBLIC_URL+"/assets/", "airplane-ww2-collision-scaled.glb");
     var meshCarrierTask = assetsManager.addMeshTask("nimitz", "", process.env.PUBLIC_URL+"/assets/", "nimitz_single_mesh.glb");
     var meshBirdTask = assetsManager.addMeshTask("bird", "", process.env.PUBLIC_URL+"/assets/", "flying-gull.glb");
     var meshAirshipTask = assetsManager.addMeshTask("airship", "", process.env.PUBLIC_URL+"/assets/", "titan_parts_joined_uvmapped.glb");
-    //var meshBirdTask = assetsManager.addContainerTask("bird", "", process.env.PUBLIC_URL+"/assets/", "bird.glb");
     meshWorldTask.onSuccess = function (task) {   
         var meshAll = task.loadedMeshes;
         meshAll[0].removeChild(meshAll[1]);
@@ -264,6 +146,7 @@ export default function canvas(canvas)  {
         ocean = new OceanSim(scene, worldSize);
         recorder = new BABYLON.VideoRecorder(engine);
         sceneLoaded = true;
+        animate();
         console.log("manager finished");
     }
     assetsManager.load();
@@ -346,21 +229,21 @@ export default function canvas(canvas)  {
     }
     function actions(){
         if(aircraft.ready){
-            keyAction("q", ()=>aircraft.steer(DIR.TILT_LEFT));
-            keyAction("e", ()=>aircraft.steer(DIR.TILT_RIGHT));
-            keyAction("w", ()=>aircraft.steer(DIR.DOWN));
-            keyAction("s", ()=>aircraft.steer(DIR.UP));
-            keyActionTrig("d", ()=>aircraft.steer(DIR.LEFT),
-                               ()=>aircraft.steer(DIR.LEFT_RESET),
-                               ()=>aircraft.steer(DIR.LEFT_HOLD));
-            keyActionTrig("a", ()=>aircraft.steer(DIR.RIGHT),
-                               ()=>aircraft.steer(DIR.RIGHT_RESET),
-                               ()=>aircraft.steer(DIR.RIGHT_HOLD));   
-            keyAction("m", ()=>aircraft.power(DIR.POWER_UP));    
-            keyAction("n", ()=>aircraft.power(DIR.POWER_DOWN));     
-            keyActionTrig("b", ()=> aircraft.brake(DIR.BRAKE),
-                               ()=> aircraft.brake(DIR.UNBRAKE),
-                               ()=> aircraft.brake(DIR.BRAKE));   
+            keyAction("q", ()=>aircraft.steer(vehicleParts.DIR.TILT_LEFT));
+            keyAction("e", ()=>aircraft.steer(vehicleParts.DIR.TILT_RIGHT));
+            keyAction("w", ()=>aircraft.steer(vehicleParts.DIR.DOWN));
+            keyAction("s", ()=>aircraft.steer(vehicleParts.DIR.UP));
+            keyActionTrig("d", ()=>aircraft.steer(vehicleParts.DIR.LEFT),
+                               ()=>aircraft.steer(vehicleParts.DIR.LEFT_RESET),
+                               ()=>aircraft.steer(vehicleParts.DIR.LEFT_HOLD));
+            keyActionTrig("a", ()=>aircraft.steer(vehicleParts.DIR.RIGHT),
+                               ()=>aircraft.steer(vehicleParts.DIR.RIGHT_RESET),
+                               ()=>aircraft.steer(vehicleParts.DIR.RIGHT_HOLD));   
+            keyAction("m", ()=>aircraft.power(vehicleParts.DIR.POWER_UP));    
+            keyAction("n", ()=>aircraft.power(vehicleParts.DIR.POWER_DOWN));     
+            keyActionTrig("b", ()=> aircraft.brake(vehicleParts.DIR.BRAKE),
+                               ()=> aircraft.brake(vehicleParts.DIR.UNBRAKE),
+                               ()=> aircraft.brake(vehicleParts.DIR.BRAKE));   
         }
 
         keyActionTrig("o", ()=> scene.debugLayer.show());
@@ -430,7 +313,6 @@ export default function canvas(canvas)  {
     function onWindowResize() {
         engine.resize();
     }
-    //fpcClock.start();
     function animate(){
         //assetsManager.onFinish = function (tasks) {
             //engine.stopRenderLoop();
@@ -462,35 +344,3 @@ export default function canvas(canvas)  {
         animate
     }
 }
-/*class ContainerAssetTask extends BABYLON.AbstractAssetTask{
-    constructor(
-        name,
-        meshesNames,
-        rootUrl,
-        sceneFilename) {
-        super(name);
-        this.name = name;
-        this.meshesNames = meshesNames;
-        this.rootUrl = rootUrl;
-        this.sceneFilename = sceneFilename;           
-    }
-    runTask(scene, onSuccess, onError) {
-        var _this = this;
-        BABYLON.SceneLoader.LoadAssetContainer(this.rootUrl, this.sceneFilename, scene, function (container) {
-            _this.loadedContainer = container;
-            _this.loadedMeshes = container.meshes;
-            _this.loadedParticleSystems = container.particleSystems;
-            _this.loadedSkeletons = container.skeletons;
-            _this.loadedAnimationGroups = container.animationGroups;
-            onSuccess();
-        }, null, function (scene, message, exception) {
-            onError(message, exception);
-        });
-    };
-
-}
-BABYLON.AssetsManager.prototype.addContainerTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
-    var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
-    this._tasks.push(task);
-    return task;
-};*/
