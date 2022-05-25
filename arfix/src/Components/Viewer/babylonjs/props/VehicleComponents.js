@@ -1,5 +1,5 @@
 import * as BABYLON from 'babylonjs';
-import {Clock} from './Clock';
+import {Clock} from '../utils/Clock';
 //const DIR = {UP:1, DOWN:2,LEFT:3, RIGHT:4,  TILT_LEFT:5, TILT_RIGHT:6, BRAKE:7, LEFT_RESET:8, RIGHT_RESET:9, POWER_UP:10, POWER_DOWN:11, LEFT_HOLD:12, RIGHT_HOLD:13, UNBRAKE:14};
 export default  class vehicleParts{
     constructor(){

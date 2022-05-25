@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs';
 import * as YUKA from 'yuka';
 import { GridMaterial} from 'babylonjs-materials';
-import { createVehicle } from './ActorsShapes.js'
+import { createVehicle } from '../utils/ActorsShapes.js'
 const inverse = new YUKA.Matrix4();
 const localPositionOfLimitBox= new YUKA.Vector3();
 class LimitBoxBehavior extends YUKA.SteeringBehavior {

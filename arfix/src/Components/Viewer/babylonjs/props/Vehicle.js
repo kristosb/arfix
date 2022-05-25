@@ -1,6 +1,6 @@
 import * as BABYLON from 'babylonjs';
 import * as CANNON from 'cannon';
-import {CannonUtils} from './CannonUtils.js';
+import {CannonUtils} from '../utils/CannonUtils.js';
 import {CarFromBoxesData, ThreeWheelCar} from './VehiclesData.js';
 
 export default class Vehicle{

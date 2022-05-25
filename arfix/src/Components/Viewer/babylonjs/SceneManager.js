@@ -3,28 +3,28 @@ import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
 //import 'babylonjs-materials';
 //import { ShadowOnlyMaterial } from "babylonjs-materials";
-import * as Ammo from 'ammojs';
+//import * as Ammo from 'ammojs';
 //import * as CANNON from './cannon.js';
 import * as CANNON from 'cannon';
 //import * as YUKA from 'yuka';
 
 import SceneSubject from './SceneSubject';
-import Airplane from './Airplane';
+import Airplane from './props/Airplane';
 //import { CarFromBoxesData, ThreeWheelCar } from './VehiclesData';
 //import VehicleAmmo from './VehicleAmmo';
-import { AirplaneChassis, AirplaneFromMesh, AirplaneWW2} from './VehiclesData.js';
-import DebugUI from './DebugUI.js';
-import HudPanel from './Hud';
-import {Clock} from './Clock';
-import SkySim from './SkySimulator.js';
-import OceanSim from './OceanSimulator.js';
-import ShadowManager from './sahdowManager';
-import Inspector from './instrumentation';
-import Suspension from './Vehicle';
-import Battleship from './BattleShip';
-import Airship from './Airship';
-import Birds from './Birds';
-import vehicleParts from './VehicleComponents';
+import { AirplaneChassis, AirplaneFromMesh, AirplaneWW2} from './props/VehiclesData.js';
+//import DebugUI from './utils/DebugUI.js';
+import HudPanel from './hud/Hud';
+import {Clock} from './utils/Clock';
+import SkySim from './scenery/SkySimulator.js';
+import OceanSim from './scenery/OceanSimulator.js';
+import ShadowManager from './scenery/sahdowManager';
+//import Inspector from './utils/instrumentation';
+import Suspension from './props/Vehicle';
+import Battleship from './props/BattleShip';
+import Airship from './props/Airship';
+import Birds from './props/Birds';
+import vehicleParts from './props/VehicleComponents';
 //import { createVehicle } from './ActorsShapes.js'
 
 export default function canvas(canvas)  {

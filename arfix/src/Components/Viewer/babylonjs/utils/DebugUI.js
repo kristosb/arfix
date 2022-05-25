@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs';
 //import { AdvancedDynamicTexture , TextBlock, StackPanel} from 'babylonjs-gui';
 import * as GUI from 'babylonjs-gui';
-import * as HUD from './GuiHudControls';
+import * as HUD from '../hud/GuiHudControls';
 export default class debugUi {
     constructor(width, height, scene){
         var guiPosition = {width:width, height:height -200};
