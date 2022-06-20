@@ -12,7 +12,7 @@ export default container => {
     
     bindEventListeners();
     resizeCanvas();
-    //sceneManager.animate();
+    sceneManager.animate();
      
     function createCanvas(document, container) {
         const canvas = document.createElement("canvas");    

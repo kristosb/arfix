@@ -87,6 +87,16 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         //if(dirNorm.y<0) ambientLight.intensity = 1; else ambientLight.intensity = 2;
         console.log(sunLight.direction);
     }
+    function getLightDirection(){
+        var dirNorm = new BABYLON.Vector3(0,0,0);
+        //console.log("inc",skyboxMaterial.inclination);
+        skyboxMaterial.useSunPosition = false;
+        dirNorm.copyFrom(skyboxMaterial.sunPosition);
+        //dirNorm.subtractInPlace(new BABYLON.Vector3(0,400,0));
+        //console.log("dir",dirNorm);
+        dirNorm.normalize();
+        return dirNorm;
+    }
     // evening  luminance =0.1 and decrease turbo = 5
 	function move(){
         skyboxMaterial.cameraOffset.y =  offset + followCam.position.y/10;
@@ -104,7 +114,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         if (skyboxMaterial.inclination <= -limit) skyboxMaterial.inclination = -limit;
         //console.log(skyboxMaterial.inclination);
         move();
-        setLightDirection();
+        //setLightDirection();
     }
     function makeClouds(area){
         var spriteManagerClouds = new BABYLON.SpriteManager("cloudsManager", "http://www.babylonjs.com/Scenes/Clouds/cloud.png", 1000, 256, scene);
@@ -147,6 +157,8 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         update,
         transitionSunInclination,
         makeClouds,
-        getSkyMesh
+        getSkyMesh,
+        getLightDirection,
+        convertRange
     }
 }

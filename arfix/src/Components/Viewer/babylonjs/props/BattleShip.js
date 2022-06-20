@@ -13,7 +13,7 @@ export default class BattleShip {
     constructor(scene, visualMesh,options){
         options = options || {};
         var initPosition = new BABYLON.Vector3(260, 4, 350);
-        this.vehicleMesh = BABYLON.MeshBuilder.CreateBox("yukaMesh",{width:12, height:3, depth:54},scene);
+        this.vehicleMesh = BABYLON.MeshBuilder.CreateBox("yukaMeshShip",{width:12, height:3, depth:54},scene);
         /*var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
         groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
         groundMat.diffuseColor = new BABYLON.Color3(0.29, 0.26, 0.26);

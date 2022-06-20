@@ -429,7 +429,7 @@ class ProceduralHeightMap{
     ///////////shallow water map /////
     generateShallowWaterGradient(res, depfthField,clipDepth=0.5, scene){
         var uid = Date.now();  
-        var deepColor = new BABYLON.Color3(0.05, 0.098, 0.168);//0.13, 0.27, 0.57);
+        var deepColor = new BABYLON.Color3(0.13, 0.27, 0.57);// new BABYLON.Color3(0.05, 0.098, 0.168);//0.13, 0.27, 0.57); 
         var shallowColor = new BABYLON.Color3(0.02, 0.72, 0.77);//(0.1, 0.54, 0.68);;//new BABYLON.Color3(0.02, 0.72, 0.77);
         var clip =clipDepth.toFixed(1).toString();
         BABYLON.Effect.ShadersStore[uid+'ShallowWaterPixelShader'] = 
@@ -597,7 +597,7 @@ function createMaskMaterial(scene, camWaterMask){
     depthMap.scale(0.2);    //reduce resolution
     const size = depthMap.getSize();
     depthMap._refreshRate = 0;
-    console.log(size);
+    //console.log(size);
     var groundMat = new BABYLON.StandardMaterial("waterOcclMask", scene);
     groundMat.diffuseTexture = depthMap;
     groundMat.specularColor.copyFromFloats(0, 0, 0);
