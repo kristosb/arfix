@@ -25,24 +25,25 @@ export default function canvas(canvas)  {
     let physicsEnt = new Physics(sceneEnt);
     let light_sun = new Light(sceneEnt, "Directional");
     let light_ambient = new Light(sceneEnt, "Hemispheric");
-    let box = new Box(sceneEnt);
-    let clouds = new Clouds(sceneEnt, 800);
     let cameraEnt = new Camera(sceneEnt, canvas);
     let sky = new Sky(sceneEnt, cameraEnt);
+    let shadows = new Shadows(sceneEnt, light_sun);
+    let box = new Box(sceneEnt);
+    let clouds = new Clouds(sceneEnt, 800);
     let ocean = new Ocean(sceneEnt);
     let keyboard = new Keyboard(sceneEnt);
     let terrain = await new Terrain(sceneEnt);
     let nimitz = await new Ship(sceneEnt);
     let zeppelin = await new Airships(sceneEnt);
     let birdflock = await new Birds(sceneEnt);
-    let airplane = await new Aircraft(sceneEnt,canvas);
-    let shadows = new Shadows(sceneEnt, light_sun);
+    let airplane = await new Aircraft(sceneEnt,canvas);  
     let debugUI = new DebugUi(sceneEnt, engine);
     //console.log("airplane",airplane.object.bluePrint.chassisMesh);
-    let keyboardSkyActions = new KeyboardSkyInteraction(sceneEnt, keyboard, sky, light_sun, light_ambient);
-    let shadowCasters = new ShadowCasters(sceneEnt, shadows, [terrain, airplane]);
-    let keyboardStateActions = new KeyboardGameStateInteraction(sceneEnt, keyboard, [nimitz, zeppelin, birdflock]);
     let keyboardCameraActions = new KeyboardCameraInteraction(sceneEnt, keyboard, cameraEnt, [airplane, birdflock,box]);
+    let shadowCasters = new ShadowCasters(sceneEnt, shadows, [terrain, airplane]);
+    let keyboardSkyActions = new KeyboardSkyInteraction(sceneEnt, keyboard, sky, light_sun, light_ambient);
+    let keyboardStateActions = new KeyboardGameStateInteraction(sceneEnt, keyboard, [nimitz, zeppelin, birdflock]);
+    
     let keyboardAirplaneActions = new KeyboardAirplaneInteraction(sceneEnt, keyboard, airplane);
     let airplaneBirdsInteractions = new AirplaneBirdsInteraction(sceneEnt, airplane, birdflock);
     // create array of all game components
@@ -51,9 +52,10 @@ export default function canvas(canvas)  {
     components.push(cameraEnt);
     components.push(light_sun);
     components.push(light_ambient);
+    components.push(shadows);
     components.push(box);
-    components.push(sky);
     components.push(ocean);
+    components.push(sky);
     components.push(clouds);
     components.push(keyboard);
     components.push(terrain);
@@ -61,11 +63,11 @@ export default function canvas(canvas)  {
     components.push(zeppelin);
     components.push(birdflock);
     components.push(airplane);
-    components.push(shadows);
+    
     components.push(debugUI);
 
-    components.push(keyboardSkyActions);
     components.push(shadowCasters);
+    components.push(keyboardSkyActions);
     components.push(keyboardStateActions);
     components.push(keyboardCameraActions);
     components.push(keyboardAirplaneActions);
@@ -73,6 +75,7 @@ export default function canvas(canvas)  {
 
     components.forEach((component) => { component.init(); });
     console.log("finished");
+    
     })();
 
 /*

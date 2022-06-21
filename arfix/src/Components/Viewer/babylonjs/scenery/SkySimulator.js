@@ -35,7 +35,9 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
 	//sunLight.position =  skyboxMaterial.sunPosition;
 
     var cloudMaterial = new BABYLON.StandardMaterial("farClouds", scene);
-    var cloudTexture = new BABYLON.Texture("https://raw.githubusercontent.com/kristosb/arfix/b958a70382ccbf86294af1540cd1608e1af1e161/arfix/public/assets/textures/Skies0362_3_masked_S.png", scene);
+    
+    //var cloudTexture = new BABYLON.Texture("https://raw.githubusercontent.com/kristosb/arfix/b958a70382ccbf86294af1540cd1608e1af1e161/arfix/public/assets/textures/Skies0362_3_masked_S.png", scene);
+    var cloudTexture = new BABYLON.Texture(process.env.PUBLIC_URL+"/assets/textures/Skies0362_3_masked_S.png", scene);
     cloudMaterial.diffuseTexture = cloudTexture;
     cloudMaterial.backFaceCulling = false;
     cloudMaterial.twoSidedLighting = true;
@@ -63,7 +65,9 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     var cloudBox = BABYLON.MeshBuilder.CreateBox('farCloudsBox', cloudOptions, scene);
     cloudBox.material = cloudMaterial;
     cloudBox.position.y = 70;
-    transitionSunInclination(0);
+    skyboxMaterial.sunPosition = new BABYLON.Vector3(2.2628522245754007e-14, 153.0733729460359, -369.5518130045147);
+    skyboxMaterial.useSunPosition = false;
+    //transitionSunInclination(0);
 
     function calcRaylight(){
         var rayligh = convertRange(followCam.position.y,[60,500],[2,0])+convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[0,2]);
@@ -71,7 +75,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         if (rayligh<0) rayligh = 0;
         skyboxMaterial.rayleigh = rayligh;
     }
-    function setLightDirection(){
+    /*function setLightDirection(){
         var dirNorm = new BABYLON.Vector3(0,0,0);
         //console.log("inc",skyboxMaterial.inclination);
         skyboxMaterial.useSunPosition = false;
@@ -86,20 +90,22 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         sunLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[2.3,1.4]);;
         //if(dirNorm.y<0) ambientLight.intensity = 1; else ambientLight.intensity = 2;
         console.log(sunLight.direction);
-    }
+    }*/ skyboxMaterial.sunPosition = new BABYLON.Vector3(2.2628522245754007e-14, 153.0733729460359, -369.5518130045147);
     function getLightDirection(){
-        var dirNorm = new BABYLON.Vector3(0,0,0);
+        var dirNorm = new BABYLON.Vector3(0,0,0);//new BABYLON.Vector3(2.2628522245754007e-14, 153.0733729460359, -369.5518130045147);//
         //console.log("inc",skyboxMaterial.inclination);
-        skyboxMaterial.useSunPosition = false;
+        //skyboxMaterial.useSunPosition = false;
         dirNorm.copyFrom(skyboxMaterial.sunPosition);
         //dirNorm.subtractInPlace(new BABYLON.Vector3(0,400,0));
-        //console.log("dir",dirNorm);
+        
+        console.log("dir",dirNorm);
         dirNorm.normalize();
         return dirNorm;
     }
     // evening  luminance =0.1 and decrease turbo = 5
 	function move(){
         skyboxMaterial.cameraOffset.y =  offset + followCam.position.y/10;
+        //console.log("offset",skyboxMaterial.cameraOffset.y );
         skyboxMaterial.turbidity  = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[44,2]);
         calcRaylight();
         
@@ -112,11 +118,11 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         skyboxMaterial.inclination += interval;
         if (skyboxMaterial.inclination >= limit) skyboxMaterial.inclination = limit;
         if (skyboxMaterial.inclination <= -limit) skyboxMaterial.inclination = -limit;
-        //console.log(skyboxMaterial.inclination);
+        console.log(skyboxMaterial.inclination, skyboxMaterial.azimuth);
         move();
         //setLightDirection();
     }
-    function makeClouds(area){
+    /*function makeClouds(area){
         var spriteManagerClouds = new BABYLON.SpriteManager("cloudsManager", "http://www.babylonjs.com/Scenes/Clouds/cloud.png", 1000, 256, scene);
         //spriteManagerClouds.texture.
         //spriteManagerClouds.blendMode
@@ -139,7 +145,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
           }
           }
     return spriteManagerClouds;
-    }
+    }*/
     
     function update(time) {
        /* now = time;
@@ -156,7 +162,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     return {
         update,
         transitionSunInclination,
-        makeClouds,
+        //makeClouds,
         getSkyMesh,
         getLightDirection,
         convertRange
