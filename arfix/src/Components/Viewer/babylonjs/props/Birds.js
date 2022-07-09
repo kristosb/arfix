@@ -39,7 +39,7 @@ class LimitBoxBehavior extends YUKA.SteeringBehavior {
         // calculate this obstacle's position in local space of the vehicle
         localPositionOfLimitBox.copy( limitBox.position ).applyMatrix4( inverse );
         //console.log(localPositionOfLimitBox.length());
-        if ( localPositionOfLimitBox.z < 0 ){//&& Math.abs( localPositionOfObstacle.z ) < dBoxLength ) {
+        if ( localPositionOfLimitBox.z < 0 ){
           const expandedRadius = limitBox.boundingRadius;// + vehicle.boundingRadius;
             var vehicleSphereDitsance = expandedRadius -localPositionOfLimitBox.length();
             if ( vehicleSphereDitsance < 0) {

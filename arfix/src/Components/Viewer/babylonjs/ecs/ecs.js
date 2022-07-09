@@ -14,6 +14,7 @@ import Airplane from './../props/Airplane';
 import Suspension from './../props/Vehicle';
 import vehicleParts from './../props/VehicleComponents';
 import Instrumentation from './../utils/instrumentation.js'
+import SettingsGui from './../utils/SettingsGui'
 //// base ////
 class ComponentBase {
 
@@ -32,7 +33,9 @@ export class Scene extends ComponentBase {
 
     init() { }
     update() { this.object.render(); }
-    dispose() { }
+    dispose() {
+        console.log("dispose");
+     }
 }
 export class Camera extends ComponentBase {
     constructor(scene, canvas) {
@@ -228,7 +231,16 @@ export class Keyboard extends ComponentBase {
     }
     dispose() { }
 }
+export class GameSettingsGui extends ComponentBase {
+    constructor(scene) {
+        super(scene);
+        this.object = new SettingsGui(scene.object);
+    }
 
+    init() { }
+    update() { }
+    dispose() { }
+}
 /*export class Assets extends ComponentBase {
     constructor(scene) {
         super(scene);
@@ -569,3 +581,95 @@ export class AirplaneBirdsInteraction extends ComponentBase {
     }
     dispose() { }
 }
+
+/*    const FRAMERATE = 1/40;
+    const fpcClock = new Clock();
+    let components = [];
+    const engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
+    engine.loadingUIText = "Loading world and airplane...";
+    engine.loadingUIBackgroundColor = "Purple";
+    //engine.stopRenderLoop();
+    //const debugUI = new Inspector(engine);
+    (async () => {
+        console.log("start");
+        //ecs
+        let sceneEnt = new Scene(engine);
+        let physicsEnt = new Physics(sceneEnt);
+        let light_sun = new Light(sceneEnt, "Directional");
+        let light_ambient = new Light(sceneEnt, "Hemispheric");
+        let cameraEnt = new Camera(sceneEnt, canvas);
+        let sky = new Sky(sceneEnt, cameraEnt);
+        let shadows = new Shadows(sceneEnt, light_sun);
+        let box = new Box(sceneEnt);
+        let clouds = new Clouds(sceneEnt, 800);
+        let ocean = new Ocean(sceneEnt);
+        let keyboard = new Keyboard(sceneEnt);
+        let gameSettingsGui = new GameSettingsGui(sceneEnt);
+        let terrain = await new Terrain(sceneEnt);
+        let nimitz = await new Ship(sceneEnt);
+        let zeppelin = await new Airships(sceneEnt);
+        let birdflock = await new Birds(sceneEnt);
+        let airplane = await new Aircraft(sceneEnt,canvas);  
+        let debugUI = new DebugUi(sceneEnt, engine);
+        //console.log("airplane",airplane.object.bluePrint.chassisMesh);
+        let keyboardCameraActions = new KeyboardCameraInteraction(sceneEnt, keyboard, cameraEnt, [airplane, birdflock,box]);
+        let shadowCasters = new ShadowCasters(sceneEnt, shadows, [terrain, airplane]);
+        let keyboardSkyActions = new KeyboardSkyInteraction(sceneEnt, keyboard, sky, light_sun, light_ambient);
+        let keyboardStateActions = new KeyboardGameStateInteraction(sceneEnt, keyboard, [nimitz, zeppelin, birdflock]);
+        let keyboardAirplaneActions = new KeyboardAirplaneInteraction(sceneEnt, keyboard, airplane);
+        let airplaneBirdsInteractions = new AirplaneBirdsInteraction(sceneEnt, airplane, birdflock);
+        // create array of all game components
+        components.push(sceneEnt);
+        components.push(physicsEnt);
+        components.push(cameraEnt);
+        components.push(light_sun);
+        components.push(light_ambient);
+        components.push(shadows);
+        components.push(box);
+        components.push(ocean);
+        components.push(sky);
+        components.push(clouds);
+        components.push(keyboard);
+        components.push(gameSettingsGui);
+        components.push(terrain);
+        components.push(nimitz);
+        components.push(zeppelin);
+        components.push(birdflock);
+        components.push(airplane);
+        
+        components.push(debugUI);
+
+        components.push(shadowCasters);
+        components.push(keyboardSkyActions);
+        components.push(keyboardStateActions);
+        components.push(keyboardCameraActions);
+        components.push(keyboardAirplaneActions);
+        components.push(airplaneBirdsInteractions);
+
+        components.forEach((component) => { component.init(); });
+        console.log("finished");
+
+        sceneEnt.object.onDispose = function () {
+            components.forEach((component) => { component.dispose(); })
+        }
+    })();
+
+    function onWindowResize() {
+        engine.resize();
+    }
+    function animate(){
+        engine.runRenderLoop(function () {    
+            if(fpcClock.timeIntervalCheck(FRAMERATE)){
+                components.forEach((component) => { component.update(); })
+            }
+        });
+    }*/
+
+/*
+    import {Scene, Camera, Light, Physics, Box, Sky, Clouds, Keyboard, 
+        KeyboardSkyInteraction, Ocean, Terrain, Shadows, 
+        ShadowCasters, Ship, KeyboardGameStateInteraction, Airships,
+        Birds, Aircraft, KeyboardCameraInteraction, KeyboardAirplaneInteraction,
+        AirplaneBirdsInteraction, DebugUi, GameSettingsGui
+} from './ecs/ecs';
+*/

@@ -65,7 +65,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
     var cloudBox = BABYLON.MeshBuilder.CreateBox('farCloudsBox', cloudOptions, scene);
     cloudBox.material = cloudMaterial;
     cloudBox.position.y = 70;
-    skyboxMaterial.sunPosition = new BABYLON.Vector3(2.2628522245754007e-14, 153.0733729460359, -369.5518130045147);
+    //skyboxMaterial.sunPosition = new BABYLON.Vector3(2.2628522245754007e-14, 153.0733729460359, -369.5518130045147);
     skyboxMaterial.useSunPosition = false;
     //transitionSunInclination(0);
 
@@ -90,7 +90,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         sunLight.intensity = convertRange(Math.abs(skyboxMaterial.inclination),[0,0.5],[2.3,1.4]);;
         //if(dirNorm.y<0) ambientLight.intensity = 1; else ambientLight.intensity = 2;
         console.log(sunLight.direction);
-    }*/ skyboxMaterial.sunPosition = new BABYLON.Vector3(2.2628522245754007e-14, 153.0733729460359, -369.5518130045147);
+    }*/ //skyboxMaterial.sunPosition = new BABYLON.Vector3(2.2628522245754007e-14, 153.0733729460359, -369.5518130045147);
     function getLightDirection(){
         var dirNorm = new BABYLON.Vector3(0,0,0);//new BABYLON.Vector3(2.2628522245754007e-14, 153.0733729460359, -369.5518130045147);//
         //console.log("inc",skyboxMaterial.inclination);
@@ -98,7 +98,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         dirNorm.copyFrom(skyboxMaterial.sunPosition);
         //dirNorm.subtractInPlace(new BABYLON.Vector3(0,400,0));
         
-        console.log("dir",dirNorm);
+        //console.log("dir",dirNorm);
         dirNorm.normalize();
         return dirNorm;
     }
@@ -118,9 +118,16 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         skyboxMaterial.inclination += interval;
         if (skyboxMaterial.inclination >= limit) skyboxMaterial.inclination = limit;
         if (skyboxMaterial.inclination <= -limit) skyboxMaterial.inclination = -limit;
-        console.log(skyboxMaterial.inclination, skyboxMaterial.azimuth);
+        //console.log(skyboxMaterial.inclination, skyboxMaterial.azimuth);
         move();
         //setLightDirection();
+    }
+    function setSunInclination( value){
+        const limit = 0.48;
+        skyboxMaterial.inclination = value;
+        if (skyboxMaterial.inclination >= limit) skyboxMaterial.inclination = limit;
+        if (skyboxMaterial.inclination <= -limit) skyboxMaterial.inclination = -limit;
+        move();
     }
     /*function makeClouds(area){
         var spriteManagerClouds = new BABYLON.SpriteManager("cloudsManager", "http://www.babylonjs.com/Scenes/Clouds/cloud.png", 1000, 256, scene);
@@ -165,6 +172,7 @@ export default function skySim(scene, sunLight, ambientLight, followCam, size = 
         //makeClouds,
         getSkyMesh,
         getLightDirection,
-        convertRange
+        convertRange,
+        setSunInclination
     }
 }
