@@ -40,13 +40,16 @@ const useRenderLoop = createEffect(() => {
       start() {
         if (!running) {
           running = true
-          _engine?.runRenderLoop(loop);
+          //_engine?.runRenderLoop(loop);
           //console.log(_engine)
         }
       },
       stop() {
         if (running) running = false
       },
+      render(){
+        if (running) _scene?.render();
+      }
     }
     function loop() {
       if (!running) return
@@ -69,13 +72,14 @@ const useRenderLoop = createEffect(() => {
 
 
 export function SysRender(world) {
-    const { scene, engine, canvas, camera } = UseScene();
+    const { scene, engine, canvas, followCamera } = UseScene();
     //console.log(world.latestTickData)
     const rednerloop = useRenderLoop(engine, scene)
     if(useInit()) {
         console.log("start rendering...");
         rednerloop.start()
     }
+    rednerloop.render()
 }
 
 

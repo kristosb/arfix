@@ -24,6 +24,7 @@ export default class BattleShip {
         this.vehicleMesh.position.x -=4.3;
         this.vehicleMesh.physicsImpostor = new BABYLON.PhysicsImpostor(this.vehicleMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 100000, friction: 1, restitution: 0.9 }, scene);
         this.vehicleMesh.isVisible = false;
+        
         //console.log(this.vehicleMesh.physicsImpostor.physicsBody.angularVelocity);
         this.entityManager = new YUKA.EntityManager();
         this.time = new YUKA.Time();
@@ -67,6 +68,7 @@ export default class BattleShip {
        // var visualMesh = BABYLON.MeshBuilder.CreateBox("battleshipMesh",{width:10, height:20, depth:10},scene);
         visualMesh.position.copyFrom(initPosition);
         visualMesh.position.y +=3.37;
+        
         this.vehicleMesh.addChild(visualMesh);
         this.vehicleMesh.rotate(new BABYLON.Vector3.Up(), -Math.PI/2);
         this.altOffset = new BABYLON.Vector3(0,-2.3,0);
