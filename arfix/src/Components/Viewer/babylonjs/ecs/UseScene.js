@@ -18,10 +18,15 @@ export const UseScene = createImmutableRef(
     const scene = new BABYLON.Scene(engine);
 
     let gravityVector = new BABYLON.Vector3(0,-9.81, 0);
-    const physics = new BABYLON.CannonJSPlugin(false,undefined,CANNON);
-    scene.enablePhysics(gravityVector, physics);
-    scene.physicsEnabled = true;
-    physics.setTimeStep(1/30);
+    // const physics = new BABYLON.CannonJSPlugin(false,undefined,CANNON);
+    // scene.enablePhysics(gravityVector, physics);
+    // scene.physicsEnabled = true;
+    // physics.setTimeStep(1/30);
+    const physics = null;
+    const physicsWorld = new CANNON.World();
+    physicsWorld.gravity.set(0,-9.81, 0);
+    physicsWorld.broadphase = new CANNON.NaiveBroadphase();
+    physicsWorld.solver.iterations = 10;
 
     const followCamera = new BABYLON.FollowCamera("followcamera", new BABYLON.Vector3(0,0,-100), scene);
     followCamera.heightOffset = 1;
@@ -53,7 +58,7 @@ export const UseScene = createImmutableRef(
     //const ocean = new OceanSim(scene, 800);
 
     console.log("scene effect created...")
-    return { scene, engine, canvas, followCamera, ambientLight ,sunLight, physics, shadows }
+    return { scene, engine, canvas, followCamera, ambientLight ,sunLight, physics, shadows, physicsWorld }
   },
   { shared: true },
 )

@@ -34,6 +34,7 @@ const boxEnt = world.create(position, rotation);
 const useRenderLoop = createEffect(() => {
     let _engine;
     let _scene;
+    let _physics;
     let running;
     //console.log("scne",_engine)
     const api = {
@@ -48,7 +49,10 @@ const useRenderLoop = createEffect(() => {
         if (running) running = false
       },
       render(){
-        if (running) _scene?.render();
+        if (running) {
+            _scene?.render();
+            _physics?.step(1/30);
+        }
       }
     }
     function loop() {
@@ -61,10 +65,12 @@ const useRenderLoop = createEffect(() => {
 
     return function useRenderLoop(
       engine,
-      scene
+      scene,
+      physics
     ) {
       _engine = engine
       _scene = scene
+      _physics = physics
       //console.log("scne",_engine)
       return api
     }
@@ -72,9 +78,9 @@ const useRenderLoop = createEffect(() => {
 
 
 export function SysRender(world) {
-    const { scene, engine, canvas, followCamera } = UseScene();
+    const { scene, engine, physicsWorld } = UseScene();
     //console.log(world.latestTickData)
-    const rednerloop = useRenderLoop(engine, scene)
+    const rednerloop = useRenderLoop(engine, scene, physicsWorld)
     if(useInit()) {
         console.log("start rendering...");
         rednerloop.start()

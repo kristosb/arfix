@@ -35,7 +35,7 @@ const qryFollowMeshes = createQuery(Id, Mesh, Camera);
 const qryShadowCasters= createQuery(Id, Mesh, Shadow);
 const qrySky = createQuery(Sun, ToggleKey)
 const qryClouds = createQuery(Position)
-const qryAiMove = createQuery( Mesh, Ai);
+const qryAiMove = createQuery( Mesh, Body, Ai);
 //const qryTerrain = createQuery(Mesh);
 //const qrySun = createQuery(SunPosition, ToggleKey);
 var loadPromise = async(root, file, scene)=>{
@@ -80,7 +80,7 @@ async function createShip(sceneBjs){
   vehicleMesh.position.copyFrom(initPosition);
   vehicleMesh.position.z +=14;
   vehicleMesh.position.x -=4.3;
-  vehicleMesh.physicsImpostor = new BABYLON.PhysicsImpostor(vehicleMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 100000, friction: 1, restitution: 0.9 }, sceneBjs);
+  //vehicleMesh.physicsImpostor = new BABYLON.PhysicsImpostor(vehicleMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 100000, friction: 1, restitution: 0.9 }, sceneBjs);
   vehicleMesh.isVisible = true;
 
   assets.meshes[0].position.copyFrom(initPosition);
@@ -101,7 +101,7 @@ async function createAirShip(sceneBjs){
   vehicleMesh.material = new GridMaterial("groundMaterialAirship", sceneBjs);//groundMat;
   vehicleMesh.position.copyFrom(initPosition);
   vehicleMesh.position.z +=-1;
-  vehicleMesh.physicsImpostor = new BABYLON.PhysicsImpostor(vehicleMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 100000, friction: 1, restitution: 0.9 }, sceneBjs);
+  //vehicleMesh.physicsImpostor = new BABYLON.PhysicsImpostor(vehicleMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 100000, friction: 1, restitution: 0.9 }, sceneBjs);
   vehicleMesh.isVisible = true;
 
   assets.meshes[0].scaling = new BABYLON.Vector3(7,7,7);
@@ -137,19 +137,22 @@ async function createAirplaneMesh(sceneBjs){
   visualMeshes.forEach(vm=>{chassis.addChild(vm)});
   assets.meshes[0].dispose(); 
   assets.addAllToScene();
+  chassis.position = new BABYLON.Vector3(275, 60.5, 364);
   return chassis;
 }
-function createBody(sceneBjs, mass = 50, size, offset){
+function createBody(sceneBjs, mass = 50, size, position, rotation,   offset, friction = 0.8, angularDamping = 0.01 ){
   var chassisShape;
   var mat = new CANNON.Material('Mat');
-  mat.friction = 0.8;
+  mat.friction = friction;
   chassisShape = new CANNON.Box(new CANNON.Vec3(size.x, size.y, size.z));
   var chassisBody = new CANNON.Body({ mass: mass });
   chassisBody.material = mat;
   chassisBody.addShape(chassisShape, new CANNON.Vec3(offset.x, offset.y, offset.z));
-  chassisBody.angularDamping = 0.8;
-  var world = sceneBjs.getPhysicsEngine().getPhysicsPlugin().world;
-  world.addBody(chassisBody);
+  chassisBody.angularDamping = angularDamping; //0.8
+  chassisBody.position = new CANNON.Vec3(position.x, position.y, position.z)
+  chassisBody.quaternion = new CANNON.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+  //const { world }= UseScene();//sceneBjs.getPhysicsEngine().getPhysicsPlugin().world;
+  //world.addBody(chassisBody);
   return chassisBody;
 }
 
@@ -161,7 +164,7 @@ const InputSample = [
 export const inputTopic = createTopic(InputSample)
 /////// SYSTEMS ////////
 export function SpawnMeshes(world) {
-    const { scene } = UseScene();
+    const { scene, physicsWorld } = UseScene();
     const meshes = UseMeshes();
     const bodies = UseBodies()
     const {yukaManager, time} = UseYuka();
@@ -205,10 +208,16 @@ export function SpawnMeshes(world) {
               position:{x:0, y:-2.3, z: 0},
               rotation:{w: 1}
           }),
+          component(Body, {
+            position:{x:0, y:0, z: 0},
+            rotation:{w: 1}
+          }),
           component(Camera, {followCamera:false,position:{x:0,y:5,z:-20}}),
           component(Ai, {velocity:{x:0,y:0,z:0}})
         ];
         const meshNimitz = await createShip(scene);
+        const bodyNimitz = createBody(scene, 100000, new BABYLON.Vector3(12,3,54), meshNimitz.position, meshNimitz.rotation, new BABYLON.Vector3(0,0,0), 1, 0.01);
+        physicsWorld.addBody(bodyNimitz);
         const aiNimitz = createAi();
         yukaManager.add(aiNimitz);
         //yukaManager.update(time.update().getDelta())
@@ -220,10 +229,16 @@ export function SpawnMeshes(world) {
               position:{x:0, y:0, z: 0},
               rotation:{w: 1}
           }),
+          component(Body, {
+            position:{x:0, y:0, z: 0},
+            rotation:{w: 1}
+          }),
           component(Camera, {followCamera:false,position:{x:0,y:8,z:-25}}),
           component(Ai, {velocity:{x:0,y:0,z:0}})
         ];
         const meshZeppelin = await createAirShip(scene);
+        const bodyZeppelin = createBody(scene, 100000, new BABYLON.Vector3(12,10,64), meshZeppelin.position, meshZeppelin.rotation, new BABYLON.Vector3(0,0,0), 1, 0.01);
+        physicsWorld.addBody(bodyZeppelin);
         const aiZeppelin= createAiAirship();
         yukaManager.add(aiZeppelin);
         //yukaManager.update(time.update().getDelta())
@@ -242,7 +257,8 @@ export function SpawnMeshes(world) {
           component(Camera, {followCamera:false,position:{x:0,y:1,z:-5}}),
         ];
         const meshAirplane = await createAirplaneMesh(scene);
-        const bodyAirplane = createBody(scene, 50, new BABYLON.Vector3(1,0.3,1),new BABYLON.Vector3(0,0.1,-0.2));
+        const bodyAirplane = createBody(scene, 50, new BABYLON.Vector3(1,0.3,1), meshAirplane.position, meshAirplane.rotation, new BABYLON.Vector3(0,0.1,-0.2), 0.8, 0.8);
+        physicsWorld.addBody(bodyAirplane);
 
         const eBox = world.create(...boxComp);
         const eterrain = world.create(...terrainComp);
@@ -258,6 +274,8 @@ export function SpawnMeshes(world) {
         meshes.set(eZeppelin, meshZeppelin);
         meshes.set(eAirplane, meshAirplane);
 
+        bodies.set(eNimitz, bodyNimitz);
+        bodies.set(eZeppelin, bodyZeppelin);
         bodies.set(eAirplane, bodyAirplane);
 
         ais.set(eNimitz, aiNimitz);
@@ -378,23 +396,27 @@ export function AiMove(world)
   const {yukaManager, time} = UseYuka();
   const meshes = UseMeshes();
   const ais = UseAi();
-  qryAiMove(function updatePosition(e, [mesh, a]) {
+  const bodies = UseBodies();
+  qryAiMove(function updatePosition(e, [mesh, b,  a]) {
     const vehicleMesh = meshes.get(e);
+    const vehicleBody = bodies.get(e);
     const vehicle = ais.get(e); 
     const altOffset = new BABYLON.Vector3(mesh.position.x,mesh.position.y,mesh.position.z);
 
-    var vy = -(vehicleMesh.position.y-vehicle.position.y+altOffset.y);
-    var meshVelocity = new BABYLON.Vector3(vehicle.velocity.x,vy,vehicle.velocity.z);
-    vehicleMesh.physicsImpostor.setLinearVelocity(meshVelocity);
-    vehicleMesh.physicsImpostor.physicsBody.angularVelocity = new CANNON.Vec3(0,0,0);
+    var vy = -(vehicleBody.position.y-vehicle.position.y+altOffset.y);
+    //var meshVelocity = new BABYLON.Vector3(vehicle.velocity.x,vy,vehicle.velocity.z);
+    //vehicleMesh.physicsImpostor.setLinearVelocity(meshVelocity);
+    var meshVelocity = new CANNON.Vec3(vehicle.velocity.x,vy,vehicle.velocity.z);
+    vehicleBody.velocity = meshVelocity; //vehicleMesh.physicsImpostor.physicsBody
+    vehicleBody.angularVelocity = new CANNON.Vec3(0,0,0);
 
     var rotC = new CANNON.Quaternion(vehicle.rotation.x, vehicle.rotation.y, vehicle.rotation.z,vehicle.rotation.w);
     var rotE = new CANNON.Vec3();
     var con = rotC.conjugate(); //find angle between quaternions
-    var rotated = con.mult(vehicleMesh.physicsImpostor.physicsBody.quaternion);    
+    var rotated = con.mult(vehicleBody.quaternion);    
     var res = new CANNON.Vec3();
     rotated.toEuler(res);
-    vehicleMesh.physicsImpostor.physicsBody.angularVelocity = new CANNON.Vec3(0,-res.y/10,0);
+    vehicleBody.angularVelocity = new CANNON.Vec3(0,-res.y/10,0);
   });
   const delta = time.update().getDelta();
   yukaManager.update(delta);
