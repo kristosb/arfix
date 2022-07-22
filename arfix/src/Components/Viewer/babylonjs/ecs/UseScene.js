@@ -58,7 +58,7 @@ export const UseScene = createImmutableRef(
     //const ocean = new OceanSim(scene, 800);
 
     console.log("scene effect created...")
-    return { scene, engine, canvas, followCamera, ambientLight ,sunLight, physics, shadows, physicsWorld }
+    return { scene, engine, canvas, followCamera, ambientLight ,sunLight, shadows, physicsWorld }
   },
   { shared: true },
 )
@@ -192,7 +192,7 @@ export function createAi(){
 
   path._waypoints.push(path._waypoints[0]);
 
-  var lines = BABYLON.MeshBuilder.CreateLines('lines', {
+  var lines = BABYLON.MeshBuilder.CreateLines('linesNimitz', {
     points: path._waypoints,
     updatable: true,
   })
@@ -230,7 +230,7 @@ export function createAiAirship(){
 
   path._waypoints.push(path._waypoints[0]);
 
-  var lines = BABYLON.MeshBuilder.CreateLines('lines', {
+  var lines = BABYLON.MeshBuilder.CreateLines('linesZeppelin', {
     points: path._waypoints,
     updatable: true,
   })

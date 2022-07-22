@@ -14,6 +14,14 @@ export const Sun = {inclination: number};//{ position: Position, direction: Posi
 export const Camera = { followCamera: boolean, position: Position };
 export const Shadow = { cast: boolean };
 export const Ai = { velocity: Position };
+export const Avionics = {
+    pitch: number,
+    yaw: number,
+    roll: number,
+    thrust: number,
+    drag: number,
+    lift: number
+};
 /*registerSchema(Position, 1);
 registerSchema(Rotation, 2);
 registerSchema(Body, 3);

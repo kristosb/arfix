@@ -16,8 +16,8 @@ import {
     component,registerSchema, createTopic
   }  from '@javelin/ecs'
 import {UseScene, UseKeyboard, UseSky, UseClouds, UseYuka, createAi, createAiAirship} from "./UseScene"
-import { Position, Rotation, Mesh, Camera, ToggleKey, Sun, Id, Shadow, Ai, Body} from "./Schema"
-
+import { Position, Mesh, Camera, ToggleKey, Sun, Id, Shadow, Ai, Body, Avionics} from "./Schema"
+import { UseRenderLoop } from "./SysRender"
 
 /// EFFECTS ///
 const UseMeshes = createImmutableRef(() => new Map(), {
@@ -36,6 +36,7 @@ const qryShadowCasters= createQuery(Id, Mesh, Shadow);
 const qrySky = createQuery(Sun, ToggleKey)
 const qryClouds = createQuery(Position)
 const qryAiMove = createQuery( Mesh, Body, Ai);
+const qryAvionics = createQuery( Mesh, Body, Avionics);
 //const qryTerrain = createQuery(Mesh);
 //const qrySun = createQuery(SunPosition, ToggleKey);
 var loadPromise = async(root, file, scene)=>{
@@ -131,7 +132,7 @@ async function createAirplaneMesh(sceneBjs){
   assets.meshes[0].removeChild(assets.meshes[11]);
   const visualMeshes = [assets.meshes[11]];
   const bodySize = new BABYLON.Vector3(2, 2, 0.6);
-  const massOffset = new BABYLON.Vector3(0, 0.2, 0.65)
+  const massOffset = new BABYLON.Vector3(0,1.2,0.5)//0, 0.2, 0.65)
   var chassis = makebox(sceneBjs, bodySize, new BABYLON.Vector3(0, 1, 0).subtractInPlace(massOffset), new BABYLON.Vector3(0,0,0).toQuaternion(),new BABYLON.Color3(.1, .1, .1), "chassis");
   chassis.isVisible = false; 
   visualMeshes.forEach(vm=>{chassis.addChild(vm)});
@@ -153,6 +154,7 @@ function createBody(sceneBjs, mass = 50, size, position, rotation,   offset, fri
   chassisBody.quaternion = new CANNON.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
   //const { world }= UseScene();//sceneBjs.getPhysicsEngine().getPhysicsPlugin().world;
   //world.addBody(chassisBody);
+  console.log("body pos= ",position)
   return chassisBody;
 }
 
@@ -255,6 +257,8 @@ export function SpawnMeshes(world) {
             rotation:{w: 1}
           }),
           component(Camera, {followCamera:false,position:{x:0,y:1,z:-5}}),
+          component(Avionics),
+          component(ToggleKey, {name: "avionics", trigger: false, hold: false})
         ];
         const meshAirplane = await createAirplaneMesh(scene);
         const bodyAirplane = createBody(scene, 50, new BABYLON.Vector3(1,0.3,1), meshAirplane.position, meshAirplane.rotation, new BABYLON.Vector3(0,0.1,-0.2), 0.8, 0.8);
@@ -334,6 +338,53 @@ export function SysKeyboard(world) {
     if(followCamera.followMeshId>= idx) followCamera.followMeshId =0;
     console.log(idx, followCamera.followMeshId,followCamera.lockedTarget.id,followCamera.radius, followCamera.rotation );
   });
+  actions.keyActionTrig("p", ()=> { 
+    const renderloop = UseRenderLoop();
+    renderloop.start(!renderloop.isPhysicsPaused());
+   });
+   actions.keyAction("m", ()=>{
+    qryAvionics( function updateControls(e, [m, b, a]) 
+    {
+      a.thrust+=0.01;
+      if(a.thrust > 1) a.thrust = 1;
+      if(a.thrust < 0) a.thrust = 0;
+      console.log(a.thrust);
+    });
+   }); 
+   actions.keyAction("n", ()=>{
+    qryAvionics( function updateControls(e, [m, b, a]) 
+    {
+      a.thrust-=0.01;
+      if(a.thrust > 1) a.thrust = 1;
+      if(a.thrust < 0) a.thrust = 0;
+      console.log(a.thrust);
+    });
+   });
+   actions.keyActionTrig("a", ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.yaw = 1;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.yaw = 0;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.yaw = 1;});}
+   );
+   actions.keyActionTrig("d", ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.yaw = -1;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.yaw = 0;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.yaw = -1;});}
+   );
+   actions.keyActionTrig("e", ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.roll = 1;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.roll = 0;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.roll = 1;});}
+   );
+   actions.keyActionTrig("q", ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.roll = -1;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.roll = 0;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.roll = -1;});}
+   );
+   actions.keyActionTrig("w", ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.pitch = 1;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.pitch = 0;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.pitch = 1;});}
+   );
+   actions.keyActionTrig("s", ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.pitch = -1;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.pitch = 0;});},
+                              ()=>{ qryAvionics( function updateControls(e, [m, b, a]) { a.pitch = -1;});}
+   );
+
 }
 
 
@@ -373,11 +424,13 @@ export function SysConfigure(world){
   const meshes = UseMeshes();
   useMonitor(qryFollowMeshes, function attachCameraToMesh(e, [i, m, c]) {
     const mesh = meshes.get(e);
-    if(i.name==="box") {
+    if(i.name==="airplane") {
       console.log("selected",mesh);
       followCamera.lockedTarget = mesh; 
-      followCamera.heightOffset = 10;
-      followCamera.radius = -5;
+      //followCamera.heightOffset = 10;
+      //followCamera.radius = -5;
+      followCamera.heightOffset = c.position.y;
+      followCamera.radius = c.position.z;
     }
   });
   useMonitor(qryClouds, function addSkyToScene(_, [pos]) {
@@ -440,10 +493,32 @@ export function BodiesSync(world)
       body.quaternion.w
     );
   }
-
   )
 }
+export function PlayerControl(world) 
+{
+  const bodies = UseBodies();
+  qryAvionics( function updateControls(e, [m, b, a]) 
+  {
+    const body = bodies.get(e);
+    const velocity = body.quaternion.inverse().vmult(body.velocity);
+    const currentSpeed = velocity.z;
+    let drag = new CANNON.Vec3(velocity.x * Math.abs(velocity.x) * -20,
+                               velocity.y * Math.abs(velocity.y) * -100,
+                               velocity.z * Math.abs(velocity.z) * -1);
+    let lift = currentSpeed * Math.abs(currentSpeed) * 1.5;
+    body.applyLocalForce(drag, new CANNON.Vec3(0, 0, -0.02));
+    body.applyLocalForce(new CANNON.Vec3(0, lift, 0), new CANNON.Vec3(0, 0, 0));
+    body.applyLocalForce(new CANNON.Vec3(0, 0, 300 * a.thrust), new CANNON.Vec3(0, 0, 1));
+    body.applyLocalForce(new CANNON.Vec3(a.yaw*5*currentSpeed, a.pitch*5*currentSpeed, 0), new CANNON.Vec3(0, 0, -1));
+    body.applyLocalForce(new CANNON.Vec3(0, -a.roll*5*currentSpeed, 0), new CANNON.Vec3(1, 0, 0));
+    body.applyLocalForce(new CANNON.Vec3(0, a.roll*5*currentSpeed, 0), new CANNON.Vec3(-1, 0, 0));
+    //a.yaw = 0;
+    //console.log(a.yaw)
+    //console.log(e, velocity, lift, drag);
+  });
 
+}
 
 
 //// utils ///

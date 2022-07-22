@@ -31,59 +31,70 @@ const boxEnt = world.create(position, rotation);
 
 
 
-const useRenderLoop = createEffect(() => {
+export const UseRenderLoop = createEffect(() => {
     let _engine;
     let _scene;
     let _physics;
     let running;
+    let physicsPause;
     //console.log("scne",_engine)
     const api = {
-      start() {
-        if (!running) {
+      start(pause) {
+        //if (!running) {
           running = true
+          physicsPause = pause
+          console.log("q",physicsPause)
           //_engine?.runRenderLoop(loop);
           //console.log(_engine)
-        }
+        //}
       },
       stop() {
-        if (running) running = false
+        //if (running) {
+            running = false
+            physicsPause = false
+        //}
+      },
+      isPhysicsPaused(){
+          return physicsPause;
       },
       render(){
         if (running) {
             _scene?.render();
-            _physics?.step(1/30);
+            if(physicsPause) _physics?.step(1/30);
         }
       }
     }
-    function loop() {
-      if (!running) return
-      _scene?.render();
-      //console.log(_scene)
-      //requestAnimationFrame(loop)
-    }
+    // function loop() {
+    //   if (!running) return
+    //   _scene?.render();
+    //   //console.log(_scene)
+    //   //requestAnimationFrame(loop)
+    // }
     //api.start()
 
     return function useRenderLoop(
-      engine,
-      scene,
-      physics
+    //   engine,
+    //   scene,
+    //   physics
     ) {
+        const { scene, engine, physicsWorld } = UseScene();
       _engine = engine
       _scene = scene
-      _physics = physics
+      _physics = physicsWorld
       //console.log("scne",_engine)
       return api
     }
-  })
+  },{ shared: true })
 
 
 export function SysRender(world) {
-    const { scene, engine, physicsWorld } = UseScene();
+    //const { scene, engine, physicsWorld } = UseScene();
+    const rednerloop = UseRenderLoop();//engine, scene, physicsWorld)
     //console.log(world.latestTickData)
-    const rednerloop = useRenderLoop(engine, scene, physicsWorld)
+    
     if(useInit()) {
         console.log("start rendering...");
-        rednerloop.start()
+        rednerloop.start(false)
     }
     rednerloop.render()
 }

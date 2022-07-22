@@ -3,7 +3,7 @@ import { createWorld, component, useWorld,
 import { Position, Rotation, Mesh, Sun, ToggleKey, Id} from "./Schema"
 //import { createHrtimeLoop } from "@javelin/hrtime-loop"
 import {SysRender} from "./SysRender"
-import {SpawnMeshes, SpawnScene, SysInput, inputTopic, SysKeyboard, SysRenderSky, SysConfigure, AiMove, BodiesSync } from "./SysSpawn"
+import {SpawnMeshes, SpawnScene, SysInput, inputTopic, SysKeyboard, SysRenderSky, SysConfigure, AiMove, BodiesSync, PlayerControl } from "./SysSpawn"
 import {Clock} from './../utils/Clock';
 export default function Game()  {
     const fpcClock = new Clock();
@@ -16,6 +16,7 @@ export default function Game()  {
     world.addSystem(SysConfigure);
     world.addSystem(AiMove);
     world.addSystem(BodiesSync);
+    world.addSystem(PlayerControl);
     
     //world.addTopic(inputTopic);
     //inputTopic.push([1,1]);
